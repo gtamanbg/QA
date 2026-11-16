@@ -1,0 +1,299 @@
+﻿@page
+@model MAP_WebApp.Pages.Contacts.IndexModel
+@{
+    ViewData["Title"] = "Contacts";
+    ViewBag.Current = "Contacts";
+}
+@Html.AntiForgeryToken()
+<partial name="_EditContatc.cshtml" />
+
+<div style="width:100%; margin:0 auto;" id="mainHolder">
+    <button id="downloadContacts" style="width:90px" class="btn btn-sm btn-primary">Download</button>
+    <table id="tblViolationDetails" class="table table-sm display" style="width:100%">
+        <thead>
+            <tr>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Seller Name
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Product Category
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    E-Mail 1
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    E-Mail 2
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    E-Mail 3
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    E-Mail 4
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    E-Mail 5
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    E-Mail 6
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        <tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/Select.css">
+    <script src="~/js/bootstrap-select.min.js"></script>
+    @* <script src="~/js/site.js"></script> *@
+
+    <link href="~/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/lib/bootbox.js/bootbox.min.js"></script>
+
+    <script>
+        var pblContacts;
+
+        function OnChange(id, remove = 0) {
+            if (remove == 1)
+                $('#' + id).val('');
+            var lcData;
+            lcData = {
+                seller_id: $('#tr_' + ($('#' + id).attr('contact_id'))).attr('seller-id'),
+                productCategory: $('#tr_' + ($('#' + id).attr('contact_id'))).attr('productCategory'),
+                ContactType: $('#' + id).attr('contacttype'),
+                Value: $('#' + id).val()
+            };
+            $.ajax({
+                "type": "POST",
+                "url": "?handler=SaveContact",
+                "contentType": "application/json; charset=utf-8",
+                "dataType": "json",
+                "data": JSON.stringify(lcData),
+                "success": function (response) {
+                    if (response.code == -1) {
+                        bootbox.alert({ title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>', closeButton: false, centerVertical: true, message: '<h5>Аn error occurred while saving data: ' + st(response.msg) + '</h5>' });
+                    }
+                },
+                "error": function (xhr, ajaxOptions, thrownError) {
+                    bootbox.alert({ title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>', closeButton: false, centerVertical: true, message: '<h5>Аn error occurred while saving data: ' + st(thrownError.msg) + '</h5>' });
+                },
+                headers: {
+                    "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+            });
+        }
+
+        $(document).ready(function () {
+            $('#tblViolationDetails').DataTable({
+                "scrollX": true,
+                "serverSide": true,
+                "filter": false,
+                "ordering": false,
+                "orderMulti": false,
+                "bLengthChange": false,
+                "pageLength": 50,
+                "language": {
+                    "emptyTable": "There ware no notification details found.",
+                    "lengthMenu": "Show _MENU_ rows per page",
+                    "info": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "infoEmpty": ""
+                },
+                "sPaginationType": "full",
+                "oLanguage": {
+                    "sInfo ": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "oPaginate": {
+                        "sNext": '>',
+                        "sLast": '>>',
+                        "sFirst": '<<',
+                        "sPrevious": '<'
+                    }
+                },
+                "ajax": {
+                    "url": "?handler=Contacts",
+                    "type": "POST",
+                    "datatype": "json",
+                    headers: {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    error: function () {
+                        bootbox.alert({ title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>', closeButton: false, centerVertical: true, message: '<h5>Аn error occurred while loading contacts!</h5>' });
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "seller_Name", "render": function (data, type, full, meta) {
+                            var text = (data == null ? '' : data);
+                            if (text.length > 19) {
+                                return '<div data-toggle="tooltip" data-placement="top" data-html="true"  title="' + text + '"><div">' + strtrunc(text, 19) + '</div></div>'
+                            } else return text;
+                        }
+                    },
+                    { "data": "productCategory", "render": function (data, type, full, meta) { return data == null ? '' : '<div>' + data + '</div>' } },
+                    {
+                        "data": "intcontact1_eMail", "render": function (data, type, full, meta) {
+
+                            return '<div class="row">' +
+                                '<div class="col" style="padding-right:5px">' +
+                                '<input id="E' + full.id + '_1" contact_id="' + full.id + '" contacttype="1" value="' + full.intContact1_eMail + '" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" >' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:0px;padding-top:3px">' +
+                                '<img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_1" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:3px;padding-top:3px;margin-right: 15px;">' +
+                                '<img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_1" title="Remove" onclick="OnChange(E' + full.id + '_1.id,1);" />' +
+                                '</div>' +
+                                '</div>';
+                        }
+                    },
+                    {
+                        "data": "intContact2_eMail", "render": function (data, type, full, meta) {
+                            return '<div class="row">' +
+                                '<div class="col" style="padding-right:5px">' +
+                                '<input id="E' + full.id + '_2" contact_id="' + full.id + '" contacttype="2" value="' + full.intContact2_eMail + '" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" >' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:0px;padding-top:3px">' +
+                                '<img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_2" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:3px;padding-top:3px;margin-right: 15px;">' +
+                                '<img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_2" title="Remove" onclick="OnChange(E' + full.id + '_2.id,1);" />' +
+                                '</div>' +
+                                '</div>';
+                        }
+                    },
+                    {
+                        "data": "intContact3_eMail", "render": function (data, type, full, meta) {
+                            return '<div class="row">' +
+                                '<div class="col" style="padding-right:5px">' +
+                                '<input id="E' + full.id + '_3" contact_id="' + full.id + '" contacttype="3" value="' + full.intContact3_eMail + '" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" >' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:0px;padding-top:3px">' +
+                                '<img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_3" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:3px;padding-top:3px;margin-right: 15px;">' +
+                                '<img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_3" title="Remove" onclick="OnChange(E' + full.id + '_3.id,1);" />' +
+                                '</div>' +
+                                '</div>';
+                        }
+                    },
+                    {
+                        "data": "intContact4_eMail", "render": function (data, type, full, meta) {
+                            return '<div class="row">' +
+                                '<div class="col" style="padding-right:5px">' +
+                                '<input id="E' + full.id + '_4" contact_id="' + full.id + '" contacttype="4" value="' + full.intContact4_eMail + '" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" >' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:0px;padding-top:3px">' +
+                                '<img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_4" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:3px;padding-top:3px;margin-right: 15px;">' +
+                                '<img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_4" title="Remove" onclick="OnChange(E' + full.id + '_4.id,1);" />' +
+                                '</div>' +
+                                '</div>';
+                        }
+                    },
+                    {
+                        "data": "intContact5_eMail", "render": function (data, type, full, meta) {
+                            return '<div class="row">' +
+                                '<div class="col" style="padding-right:5px">' +
+                                '<input id="E' + full.id + '_5" contact_id="' + full.id + '" contacttype="5" value="' + full.intContact5_eMail + '" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" >' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:0px;padding-top:3px">' +
+                                '<img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_5" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:3px;padding-top:3px;margin-right: 15px;">' +
+                                '<img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_5" title="Remove" onclick="OnChange(E' + full.id + '_5.id,1);" />' +
+                                '</div>' +
+                                '</div>';
+                        }
+                    },
+                    {
+                        "data": "intContact6_eMail", "render": function (data, type, full, meta) {
+                            return '<div class="row">' +
+                                '<div class="col" style="padding-right:5px">' +
+                                '<input id="E' + full.id + '_6" contact_id="' + full.id + '" contacttype="6" value="' + full.intContact6_eMail + '" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" >' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:0px;padding-top:3px">' +
+                                '<img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_6" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />' +
+                                '</div>' +
+                                '<div class="col-1" style="padding-left:3px;padding-top:3px;margin-right: 15px;">' +
+                                '<img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="E' + full.id + '_6" title="Remove" onclick="OnChange(E' + full.id + '_6.id,1);" />' +
+                                '</div>' +
+                                '</div>';
+                        }
+                    }
+                ],
+                columnDefs: [
+                    { "targets": 0, "className": 'text-sm-left text-sm-middle', "width": "85px" },
+                    { "targets": 1, "className": 'text-sm-left text-sm-middle', "width": "60px" },
+                    { "targets": 2, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 3, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 4, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 5, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 6, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 7, "className": 'text-sm-left', "width": "100px" }
+
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    var id = aData.id;
+                    var seller_id = aData.seller_Id;
+                    var productCategory = aData.productCategory;
+                    $(nRow).attr("id", "tr_" + id);
+                    $(nRow).attr("row-id", id);
+                    $(nRow).attr("seller-id", seller_id);
+                    $(nRow).attr("productCategory", productCategory);
+                    return nRow;
+                },
+                "drawCallback": function (settings) {
+                    //$('.selectpicker').selectpicker('refresh');
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+
+        function strtrunc(str, max, add) {
+            add = add || '...';
+            return (typeof str === 'string' && str.length > max ? str.substring(0, max) + add : str);
+        };
+
+        $("#downloadContacts").click(function (e) {
+            e.preventDefault();
+
+            var method = '?handler=DownloadContacts';
+            $.ajax({
+                url: method,
+                type: 'POST',
+                async: true,
+                success: function (data) {
+                    if (data.code == 1) {
+                        window.location.href = 'Download?Id=' + data.msg;
+                    }
+                    else {
+                        bootbox.alert({
+                            title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Downloading error</div></div>',
+                            closeButton: false,
+                            centerVertical: true,
+                            message: '<h5>Аn error occurred while downloading file!</h5>'
+                        });
+                    }
+                },
+                error: function (data) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while downloading file!</h5>'
+                    });
+                },
+                headers: {
+                    "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+    </script>
+}

@@ -1,0 +1,93 @@
+﻿@page
+@model MAP_WebApp.Pages.Admin.LogsModel
+@{
+    ViewBag.SecondNavBar = "_SecondNavBar";
+    ViewBag.SubNavPage = "Logs";
+}
+@Html.AntiForgeryToken()
+
+
+<table id="tbl_logs" class="table table-hover table-sm" width="100%">
+    <thead>
+        <tr>
+            <th></th>
+            <th class="text-sm-left" style="padding-right:0px">User Name</th>
+            <th class="text-sm-left" style="padding-right:0px">Path</th>
+            <th class="text-sm-left" style="padding-right:0px">Ip Address</th>
+            <th class="text-sm-left" style="padding-right:0px">Logged On</th>
+        </tr>
+    </thead>
+</table>
+
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/Select.css">
+    <script src="~/js/bootstrap-select.min.js"></script>
+
+    <link href="~/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        $('#tbl_logs').on('click', 'tbody tr', function () {
+            id = $(this).attr('href-data');
+            //window.location.href = 'edit' + id;
+            alert('ToDo');
+        });
+
+        $(document).ready(function () {
+            table = $("#tbl_logs").DataTable({
+                "serverSide": true,
+                "filter": true,
+                "ordering": false,
+                "orderMulti": false,
+                "bLengthChange": true,
+                "iDisplayLength": 100,
+                "language": {
+                    "emptyTable": "There ware no scenarios found.",
+                    "lengthMenu": "Show _MENU_ rows per page",
+                    "info": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "infoEmpty": ""
+                },
+                "sPaginationType": "full",
+                "oLanguage": {
+                    "sInfo ": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "oPaginate": {
+                        "sNext": '>',
+                        "sLast": '>>',
+                        "sFirst": '<<',
+                        "sPrevious": '<'
+                    }
+                },
+                "ajax": {
+                    "url": "?handler=LoadTable",
+                    "type": "POST",
+                    "datatype": "json",
+                    headers: {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                },
+                "columns": [
+                    { "data": "id" },
+                    { "data": "userName" },
+                    { "data": "path" },
+                    { "data": "ipAddress" },
+                    { "data": "loggedOn" }
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    var id = aData.id;
+                    $(nRow).attr("href-data", id);
+                    $(nRow).attr("style", "cursor:pointer");
+                    return nRow;
+                },
+                columnDefs: [
+                    { "targets": 0, "className": 'text-sm-center', "visible": false },
+                    { "targets": 1, "className": 'text-sm-left', "width": "15%" },
+                    { "targets": 2, "className": 'text-sm-left' },
+                    { "targets": 3, "className": 'text-sm-left', "width": "12%" },
+                    { "targets": 4, "className": 'text-sm-left', "width": "150px" }
+                ],
+            });
+        });
+    </script>
+}

@@ -1,0 +1,57 @@
+﻿<div class="modal fade" id="EditAddressDlg" tabindex="-1" role="dialog" aria-labelledby="copyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="Modal_Copy_Title">Edit Address</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row" style="margin:3px">
+                    <div class="col">
+                        <label>Addess</label>
+                    </div>
+                    <div class="col">
+                        <input id="edAddress" class="form-control form-control-sm" placeholder="Enter address" />
+                    </div>
+                </div>
+
+                <div class="row" style="margin:3px">
+                    <div class="col">
+                        <label>City</label>
+                    </div>
+                    <div class="col">
+                        <input id="edCity" class="form-control form-control-sm" placeholder="Enter city" />
+                    </div>
+                </div>
+
+                <div class="row" style="margin:3px">
+                    <div class="col">
+                        <label>State</label>
+                    </div>
+                    <div class="col">
+                        <select id="edState" class="form-control form-control-sm selectpicker" asp-items="@Model.StateList" onchange="OnChange();">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row" style="margin:3px">
+                    <div class="col">
+                        <label>ZIP</label>
+                    </div>
+                    <div class="col">
+                        <input id="edZIP" class="form-control form-control-sm" placeholder="Enter zip" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-primary" id="addressbtnOk" style="min-width:90px">
+                    <span id="spnCopy" class="spinner-border spinner-border-sm" hidden></span>
+                    <span id="btnlbOk">Ok</span>
+               </button>
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal" style="min-width:90px">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

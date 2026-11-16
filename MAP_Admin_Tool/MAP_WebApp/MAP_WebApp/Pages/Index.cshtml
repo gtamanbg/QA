@@ -1,0 +1,649 @@
+﻿@page
+@model MAP_WebApp.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home";
+    ViewBag.Current = "Home";
+}
+@Html.AntiForgeryToken()
+<partial name="_SetStatus.cshtml" />
+
+<div style="width:100%; margin:0 auto;">
+    <div class="row" style="min-height: 20px; width:100%">
+    </div>
+    <div class="row">
+        <div class="col-1">
+            <h4 id="FilterVisibility" style="cursor:pointer; color:#0096D6" data-toggle="collapse" data-target="#dFilters" aria-expanded="false" aria-controls="dFilters"><u>Filter</u></h4>
+        </div>
+        <div class="col text-center">
+            @if (Model.TargetUrl != null){
+                <a href="@Model.TargetUrl" class="h4" target="_blank"><u>@Model.TitleUrl</u></a>
+            }
+        </div>
+        <div class="col-1"></div>
+    </div>
+    <div class="collapse" id="dFilters">
+        <div class="row">
+            <div class="col">
+                <div style="width:100%">
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px;cursor:pointer; color:#0096D6" onclick="ResetFilters();"><u>Reset Filters</u></dt>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Country</dt>
+                        <dd style="padding-left:0px; width:125px;">
+                            <select id="filter_Country" class="form-control form-control-sm selectpicker" data-actions-box="true" asp-items="@Model.CountryList" );" onchange="CountryOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Report Date</dt>
+                        <dd style="padding-left:0px; width:125px;">
+                            <input type="date" id="filter_FromDate" max="3000-12-31" min="1000-01-01" class="form-control form-control-sm" value="@Model.FilterFromDate" @*oninput="filterOnChange();"*@ style="width:125px;" />
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Policy</dt>
+                        <dd class="col-1" style="padding:0px">
+                            <select id="filter_Policy" class="form-control form-control-sm selectpicker" multiple="multiple" data-actions-box="true" asp-items="@Model.PolicyList" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Seller Type</dt>
+                        <dd class="col-2" style="padding:0px">
+                            <select id="filter_SellerType" class="form-control form-control-sm selectpicker" multiple="multiple" data-actions-box="true" asp-items="@Model.SellerTypeList" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Reporting Group</dt>
+                        <dd class="col-2" style="padding:0px">
+                            <select id="filter_SellerSubType" class="form-control form-control-sm selectpicker" multiple="multiple" data-actions-box="true" asp-items="@Model.SellerSubTypeList" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Penalty Type</dt>
+                        <dd class="col-2" style="padding:0px">
+                            <select id="filter_PenaltyType" class="form-control form-control-sm selectpicker" multiple="multiple" data-actions-box="true" asp-items="@Model.PenaltyTypeList" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Product Type</dt>
+                        <dd class="col-2" style="padding:0px">
+                            <select id="filter_ProductType" class="form-control form-control-sm selectpicker" multiple="multiple" data-actions-box="true" asp-items="@Model.ProductTypeList" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">Seller Name</dt>
+                        <dd class="col-2" style="padding:0px">
+                            <select id="filter_SellerName" class="form-control form-control-sm selectpicker" data-actions-box="true" data-live-search="true" multiple="multiple" asp-items="@Model.SallerName" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" style="margin-bottom:20px">
+                        <dt class="col-2" style="margin-left:20px">HP Approval Status</dt>
+                        <dd class="col-2" style="padding:0px">
+                            <select id="filter_HPApprovalStatus" class="form-control form-control-sm selectpicker" data-actions-box="true" multiple="multiple" asp-items="@Model.ApprovalStatusList" );" onchange="filterOnChange(this);">
+                            </select>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br />
+
+    <div class="row">
+        <div class="col text-sm-left" style="width:30px">
+            <div class="text-sm-left" style="margin: 0px; height:75px"></div>
+            <button id="downloadViolationDetail" style="width:90px" class="btn btn-sm btn-primary">Download</button>
+            <button id="btnSave" style="width:90px" class="btn btn-sm btn-primary">Save</button>
+            @*D.Damov -> Comment for launch <button id="btnChangeApprovalStatus" style="width:90px" class="btn btn-sm btn-primary">Set status</button>*@
+        </div>
+        <div class="text-sm-right" style="margin-right:5px;padding:0px;width:180px">
+            <div class="text-sm-left" style="margin: 0px; width:100px">Legend:</div>
+            <div class="text-sm-left" style="margin: 0px; padding:3px;background-color:#f2f2f2; width:180px">Under $10K penalty threshold</div>
+            <div class="text-sm-left" style="margin: 0px; padding:3px;background-color:#ffe699; width:180px">Violation on Hold</div>
+            <div class="text-sm-left" style="margin: 0px; padding:3px;background-color:#f8cbad; width:180px">Violation Voided</div>
+        </div>
+    </div>
+
+    <table id="tbl_notifications" class="table table-sm " style="width:100%;padding:0px!important">
+        <thead>
+            <tr>
+                <th class="text-sm-left" style="padding-right:0px;">
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                </th>
+                <th class="text-sm-left" style="padding-right:0px; text-align:left">
+                    Policy
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    New Location ID
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Seller Name
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Seller Status
+                </th>
+                @*<th class="text-sm-left" style="padding-right:0px;">
+                        Seller DBA
+                    </th>*@
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Product Type
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Penalty
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Penalty Impact
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    MPA Seller
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Marketplace Violations
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    HP Approval Status
+                </th>
+                <th class="text-sm-left" style="padding-right:4px">
+                    HP Reviewee Notes
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        <tbody>
+
+        <tbody>
+    </table>
+</div>
+
+@section Scripts{
+    <link rel="stylesheet" href="~/css/Select.css">
+    <link href="~/css/site.css" rel="stylesheet" />
+    <script src="~/js/bootstrap-select.min.js"></script>
+
+    <link href="~/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/lib/bootbox.js/bootbox.min.js"></script>
+    <script>
+        var loadLastPage = "1";
+        function filterOnChange(e) {
+            
+            if (e.id != 'filter_SellerName') {
+                var lcFilters = {
+                    country: $('#filter_Country').val(),
+                    fromDate : document.getElementById("filter_FromDate").value,
+                    policy : $('#filter_Policy').val() == null ? '' : $('#filter_Policy').val().toString(),
+                    sellerType : $('#filter_SellerType').val() == null ? '' : $('#filter_SellerType').val().toString(),
+                    sellerSubType : $('#filter_SellerSubType').val() == null ? '' : $('#filter_SellerSubType').val().toString(),
+                    penaltyType : $('#filter_PenaltyType').val() == null ? '' : $('#filter_PenaltyType').val().toString(),
+                    sellerName : $('#filter_SellerName').val() == null ? '' : $('#filter_SellerName').val().toString(),
+                    hpApprovalStatus : $('#filter_HPApprovalStatus').val() == null ? '' : $('#filter_HPApprovalStatus').val().toString(),
+                    productType : $('#filter_ProductType').val() == null ? '' : $('#filter_ProductType').val().toString(),
+                    allSellerList : $.map($('#filter_SellerName option'), function(e) { return e.value; }).join(',')
+                };
+                hideprogress = true;
+                $.ajax({
+                    url: "?handler=Sellers",
+                    method: 'POST',
+                    datatype: 'json',
+                    data: lcFilters,
+                    async: false,
+                    success: function (data) {
+                        if (data.code == -1)
+                            bootbox.alert({
+                                title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                                closeButton: false,
+                                centerVertical: true,
+                                message: '<h5>Аn error occurred while loading sellers: ' + data.msg + '</h5>'
+                            });
+                        else {
+                            $('#filter_SellerName').html('');
+                            data.msg.forEach(function (value) {
+                                $('#filter_SellerName').append('<option value="' + value.id + '" ' + (value.isSelected == 1? 'selected="selected"':'') + '>' + value.options + '</option>');
+                            });
+                            $('.selectpicker').selectpicker('refresh');
+                        }
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                });
+            }
+            loadLastPage = "0";
+            hideprogress = true;
+            $('#tbl_notifications').DataTable().ajax.reload();
+            hideprogress = false;
+        };
+
+        $('#tbl_notifications').on('click', 'tbody td', function () {
+            id = $(this).attr('href-data');
+            notificationType = $(this).attr('notificationType');
+            if (id != undefined)
+                if (id != "") {
+                    if (notificationType == "1")
+                        window.location.href = 'ViolationDetail?id=' + id;
+                    else if (notificationType == "2")
+                        window.location.href = 'ViolationSuppliesDetail?id=' + id;
+                    else
+                        window.location.href = 'SuspensionDetail?id=' + id;
+                }
+        });
+        $('#filter_FromDate').on('change', function (e) {
+            $("#filter_FromDate").val(getSunday($("#filter_FromDate").val()));
+            $('.selectpicker').selectpicker('refresh');
+            filterOnChange(this);
+        });
+        $('#tbl_notifications').on( 'page.dt', function () {
+            loadLastPage = "0";
+        });
+
+        $(document).ready(function () {
+            table = $("#tbl_notifications").DataTable({
+                "serverSide": true,
+                "filter": false,
+                "ordering": false,
+                "orderMulti": false,
+                "bLengthChange": false,
+                "pageLength": 20,
+                "displayStart": parseInt('@Model.LastPage'),
+                "language": {
+                    "emptyTable": "There ware no notification found.",
+                    "lengthMenu": "Show _MENU_ rows per page",
+                    "info": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "infoEmpty": ""
+                },
+                "sPaginationType": "full",
+                "oLanguage": {
+                    "sInfo ": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "oPaginate": {
+                        "sNext": '>',
+                        "sLast": '>>',
+                        "sFirst": '<<',
+                        "sPrevious": '<'
+                    }
+                },
+                "ajax": {
+                    "url": "?handler=LoadTable",
+                    "type": "POST",
+                    "datatype": "json",
+                    "data": function (d) {
+                            d.country = $('#filter_Country').val(),
+                            d.fromDate = document.getElementById("filter_FromDate").value,
+                            //d.toDate = document.getElementById("filter_ToDate").value,
+                            d.policy = $('#filter_Policy').val() == null ? '' : $('#filter_Policy').val().toString(),
+                            d.sellerType = $('#filter_SellerType').val() == null ? '' : $('#filter_SellerType').val().toString(),
+                            d.sellerSubType = $('#filter_SellerSubType').val() == null ? '' : $('#filter_SellerSubType').val().toString(),
+                            d.penaltyType = $('#filter_PenaltyType').val() == null ? '' : $('#filter_PenaltyType').val().toString(),
+                            d.sellerName = $('#filter_SellerName').val() == null ? '' : $('#filter_SellerName').val().toString(),
+                            d.hpApprovalStatus = $('#filter_HPApprovalStatus').val() == null ? '' : $('#filter_HPApprovalStatus').val().toString(),
+                            d.productType = $('#filter_ProductType').val() == null ? '' : $('#filter_ProductType').val().toString(),
+                            d.loadLastPage = loadLastPage;
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    error: function () {
+                        hideprogress = false;
+                        bootbox.alert({
+                            title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                            closeButton: false,
+                            centerVertical: true,
+                            message: '<h5>Аn error occurred while loading notifications!</h5>'
+                        });
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "id", "render": function (data, type, full, meta) {
+                            //D.Damov -> Comment for a launch
+                            //return '<div class="text-sm-center"><div class="custom-control custom-checkbox custom-control-inline form-control-sm border-0" style="padding:0px;margine:0px">'+
+                            //            '<input type="checkbox" class="custom-control-input" id="c_' + full.id +
+                            //                '" name="c_' + full.id + '" row-id="' + full.id + '" />'+
+                            //            '<label class="custom-control-label-datatable" for="c_' + full.id + '"></label>'+
+                            //        '</div></div>'
+                            return '';
+                        }
+                    },
+                    { "data": "changeInfo", "render": function (data, type, full, meta) { return '<div data-toggle="tooltip" data-placement="top" data-html="true"  title="' + full.changeInfo + '"><img src="/img/info.png" data-toggle="tooltip" data-placement="top" class="info-img"></div>' } },
+                    { "data": "policy", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); } },
+                    { "data": "location_id", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); } },
+                    {
+                        "data": "seller_Name", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); },
+                        'render': function (data, type, full, meta) { var text = data == null ? '' : data; return '<div data-toggle="tooltip" data-html="true" data-placement="top" title="'+(text.length > 30? '<b>Seller Name:</b> ' + text + '<br />':'') + '<b>Seller DBA: </b>' + full.seller_DBA + '">' + strtrunc(text, 30) + '</div>'}
+                    },
+                    { "data": "qualification_Status", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); } },
+                    { "data": "product_Type", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); }, 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 15) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + strtrunc(text, 15) + '</div>' } else return text } },
+                    { "data": "penalty", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); }, 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 20) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + strtrunc(text, 20) + '</div>' } else return text } },
+                    {
+                        "data": "penalty_Impact",
+                        'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); },
+                        "render": function (data, type, full, meta) {
+                            return data == null ? '<div id="PI_' + full.id + '" data-penalty="' + full.penalty + '" data-penalty-id="' + full.penalty_Id + '" notificationtype="' + full.notificationType + '" class="text-left" value="">na</div>' : '<div class="row"><div class="col" style="width:10px;padding-right:0px">$</div><div class="text-right col" id="PI_' + full.id +
+                                '" data-id="' + full.id + '" data-penalty="' + full.penalty + '" data-penalty-id="' + full.penalty_Id + '" notificationtype="' + full.notificationType + '" value="' + data + '">' + numberWithCommas(data,0) + '</div></div>'
+                        }
+                    },
+                    { "data": "mpaSeller", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); }, 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 50) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + strtrunc(text, 10) + '</div>' } else return text } },
+                    { "data": "marketplaceViolations", 'createdCell': function (td, cellData, rowData, row, col) { $(td).attr('href-data', rowData.id); $(td).attr('data-penalty', rowData.penalty); $(td).attr('data-penalty-id', rowData.penalty_Id); $(td).attr('notificationtype', rowData.notificationType); }, 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 50) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + strtrunc(text, 10) + '</div>' } else return text } },
+                    {
+                        "data": "approvalStatus_id", "render": function (data, type, full, meta) {
+                            return '<select id="AS_' + full.id + '" data-id="' + full.id + '" class="form-control form-control-sm selectpicker bootstrap-select-test" onchange="ApprovalStatusChange(this);">' +
+                                '<option ' + (data == '1' ? 'selected="selected"' : '') + ' value="1">Pending Approval</option>' +
+                                '<option ' + (data == '2' ? 'selected="selected"' : '') + ' value="2">Approved</option>' +
+                                '<option ' + (data == '3' ? 'selected="selected"' : '') + ' value="3">On Hold</option>' +
+                                '<option ' + (data == '4' ? 'selected="selected"' : '') + ' value="4">Void</option>' +
+                                '</select>'
+                        }
+                    },
+                    {
+                        "data": "notes",'render': function (data, type, full, meta) {
+                                return '<div class="float-sm"><input id="N_' + full.id + '" data-id="' + full.id +
+                                    '" class="form-control form-control-sm text-sm-left" style="background-color:inherit !important" onfocus="this.select();" onmouseup="return false;" value="' + (data == null ? '' : data) +
+                                    '" onchange="NotesChange(this)"></div>';
+                        }
+                    }
+                ],
+                columnDefs: [
+                    { "targets": 0, "className": 'text-sm-left text-sm-middle', "width": "1px" },//15px
+                    { "targets": 1, "className": 'text-sm-left text-sm-middle', "width": "15px" },
+                    { "targets": 2, "className": 'text-sm-left', "width": "50px" },
+                    { "targets": 3, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 4, "className": 'text-sm-left', "width": "200px" },
+                    //{ "targets": 5, "className": 'text-sm-left', "width": "200px" },
+                    { "targets": 5, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 6, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 7, "className": 'text-sm-left', "width": "150px" },
+                    { "targets": 8, "className": 'text-sm-left', "width": "110px" },
+                    { "targets": 9, "className": 'text-sm-center', "width": "65px" },
+                    { "targets": 10, "className": 'text-sm-center', "width": "80px" },
+                    { "targets": 11, "className": 'text-sm-left', "width": "120px" },
+                    { "targets": 12, "className": 'text-sm-left' }
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    var id = aData.id;
+                    $(nRow).attr("id", id);
+                    $(nRow).attr("data-changed", 0);
+                    $(nRow).attr("data-SellerType", aData.sellerType_id);
+                    ChangeTableColor(id);
+
+                    if (aData.approvalStatus_id == 4)
+                        $(nRow).attr("style", "cursor:pointer; background-color:#f8cbad");
+                    else if (aData.approvalStatus_id == 3)
+                        $(nRow).attr("style", "cursor:pointer; background-color:#ffe699");
+                    else if (aData.approvalStatus_id == 1 && (aData.penalty_Impact != null && aData.penalty_Impact < 10000))
+                        $(nRow).attr("style", "cursor:pointer; background-color:#f2f2f2");
+                    else
+                        $(nRow).attr("style", "cursor:pointer")
+                    return nRow;
+                },
+                "drawCallback": function (settings) {
+                    loadLastPage = "1";
+                    $('.selectpicker').selectpicker('refresh');
+                    $('[data-toggle="tooltip"]').tooltip();
+
+                    $('#tbl_notifications tbody tr').each(function () {
+                        ChangeTableColor($(this).attr('id'))
+                    })
+                }
+            });
+        });
+
+        function strtrunc(str, max, add) {
+            add = add || '...';
+            return (typeof str === 'string' && str.length > max ? str.substring(0, max) + add : str);
+        };
+        function numberWithCommas(inputNum, inRoundUp = "") {
+            if (inRoundUp.toString() == "")
+                inRoundUp = 2
+            if (inputNum == 0)
+                return '-'
+            else
+                return inputNum.toFixed(inRoundUp).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        function ApprovalStatusChange(input) {
+            lcId = $(input).attr('data-id');
+            $('#' + lcId).attr('data-changed', 1);
+            ChangeTableColor($(input).attr('data-id'))
+        }
+        function NotesChange(input) {
+            lcId = $(input).attr('data-id');
+            $('#' + lcId).attr('data-changed', 1);
+            ChangeTableColor($(input).attr('data-id'))
+        }
+        function ChangeTableColor(imput) {
+
+            var lcApprovalStatus_id = $('#AS_' + imput).val();
+            var lcPenalty_Impact = Number($('#PI_' + imput).attr('Value'));
+            var penalty = $('#PI_' + imput).attr('data-penalty-id');
+            var sellerType = $('#' + imput).attr('data-SellerType');
+
+            var lcBGColor = 'cursor:pointer; background-color:';
+            var lcColor = "";
+            if (lcApprovalStatus_id == 4)
+                lcColor = '#f8cbad';
+            else if (lcApprovalStatus_id == 3)
+                lcColor = '#ffe699';
+            else if (lcApprovalStatus_id == 1 && penalty != '1' && sellerType == '3' && (lcPenalty_Impact != "" && lcPenalty_Impact < 10000))
+                lcColor = '#f2f2f2';
+            else
+                lcColor = '#fff';
+
+            $('#' + imput).find('.bootstrap-select > .dropdown-toggle').css('background', 'transparent');
+            $('#' + imput).find('.bootstrap-select').css('background', 'transparent');
+            $('#' + imput).find('.filter-option-inner-inner').css('background', 'transparent');
+            $('#' + imput).find('.filter-option').css('background', 'transparent');
+            $('#' + imput).find('.bootstrap-select > .dropdown-toggle').css('box-shadow', 'none');
+            $('#' + imput).find('.bootstrap-select > .dropdown-toggle').css('border-color', 'transparent');
+            $('#' + imput).attr('style', lcBGColor + lcColor);
+        }
+
+        $("#downloadViolationDetail").click(function (e) {
+            e.preventDefault();
+            var form = document.forms[""];
+            var formData = new FormData(form);
+            formData.append('fromDate', document.getElementById("filter_FromDate").value);
+            formData.append('policy', $('#filter_Policy').val() == null ? '' : $('#filter_Policy').val().toString());
+            formData.append('sellerType', $('#filter_SellerType').val() == null ? '' : $('#filter_SellerType').val().toString());
+            formData.append('sellerSubType', $('#filter_SellerSubType').val() == null ? '' : $('#filter_SellerSubType').val().toString());
+            formData.append('penaltyType', $('#filter_PenaltyType').val() == null ? '' : $('#filter_PenaltyType').val().toString());
+            formData.append('sellerName', $('#filter_SellerName').val() == null ? '' : $('#filter_SellerName').val().toString());
+            formData.append('hpApprovalStatus', $('#filter_HPApprovalStatus').val() == null ? '' : $('#filter_HPApprovalStatus').val().toString());
+            formData.append('productType', $('#filter_ProductType').val() == null ? '' : $('#filter_ProductType').val().toString());
+            formData.append('country', $('#filter_Country').val() == null ? '' : $('#filter_Country').val().toString());
+
+            var method = '?handler=DownloadViolationDetail';
+            $.ajax({
+                url: method,
+                type: 'POST',
+                async: true,
+                data: formData,
+                success: function (data) {
+                    if (data.code == 1) {
+                        window.location.href = 'Download?Id=' + data.msg;
+                    }
+                    else {
+                        bootbox.alert({
+                            title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Downloading error</div></div>',
+                            closeButton: false,
+                            centerVertical: true,
+                            message: '<h5>Аn error occurred while downloading file!</h5>'
+                        });
+                    }
+                },
+                error: function (data) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while downloading file!</h5>'
+                    });
+                },
+                headers: {
+                    "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+        $('#btnSave').on('click', function () {
+            var lcData = LandingPageDataSerialization("");
+            if (lcData == -1)
+                return;
+            $.ajax({
+                "type": "POST",
+                "url": "?handler=SaveNotification",
+                "contentType": "application/json; charset=utf-8",
+                "dataType": "json",
+                "data": JSON.stringify(lcData),
+                "success": function (response) {
+                    if (response.code != -1) {
+                        if (response.msg != null)
+                            bootbox.alert({
+                                title: 'Information',
+                                closeButton: false,
+                                centerVertical: true,
+                                message: '<h5>' + st(response.msg) + '</h5>',
+                                callback: function (result) { location.reload(); }
+                            });
+                        else
+                            location.reload();
+                    }
+                    else {
+                        bootbox.alert({
+                            title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                            closeButton: false,
+                            centerVertical: true,
+                            message: '<h5>Аn error occurred while saving data: ' + st(response.msg) + '</h5>'
+                        });
+                    }
+                },
+                "error": function (xhr, ajaxOptions, thrownError) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while saving data!</h5>'
+                    });
+                },
+                headers: {
+                    "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+            });
+        });
+        $('#setbtnOk').on('click', function () {
+            if (($('#setAS').val() == 3 || $('#setAS').val() == 4) && ($('#setNote').val() == '')) {
+                $('#setNote').attr("style", 'border-color:#ff0000; background-color: #f0fbff');
+                return
+            }
+            else
+                $('#setNote').attr("style", 'background-color: inherit !important');
+
+            var NotificationList = []
+            $('#tbl_notifications tbody tr').each(function () {
+                var id = $(this).attr('id');
+                if ($('#c_' + id).is(":checked")) {
+                    $('#AS_' + id).val($('#setAS').val());
+                    $('#N_' + id).val($('#setNote').val());
+                    $('#c_' + id).prop("checked", false);
+                    ChangeTableColor(id)
+                }
+                $('.selectpicker').selectpicker('refresh');
+            });
+            $('#SetStatusDlg').modal('toggle');
+        });
+        $('#btnChangeApprovalStatus').on('click', function () {
+            $('#setAS').val([]);
+            $('#setNote').val('');
+            $('#SetStatusDlg').modal().show();
+        });
+
+        function ResetFilters() {
+            $('#filter_FromDate').val('@Model.FirstDayOfPreviousWeek');
+            //$('#filter_ToDate').val('@Model.LastDayOfPreviousWeek');
+            $('#filter_Policy option').prop('selected', true);
+            $('#filter_SellerType option').prop('selected', true);
+            $('#filter_SellerSubType option').prop('selected', true);
+            $('#filter_PenaltyType option').prop('selected', true);
+            $('#filter_SellerName option').prop('selected', true);
+            $('#filter_HPApprovalStatus option').prop('selected', true);
+            $('#filter_ProductType option').prop('selected', true);
+            $('.selectpicker').selectpicker('refresh');
+            filterOnChange($('#filter_FromDate'));
+        };
+
+        function CountryOnChange(e) {
+            if (e.id != 'filter_SellerName') {
+                var lcFilters = {
+                    country: $('#filter_Country').val()
+                };
+                hideprogress = true;
+                $.ajax({
+                    url: "?handler=Country",
+                    method: 'POST',
+                    datatype: 'json',
+                    data: lcFilters,
+                    async: false,
+                    success: function (data) {
+                        if (data.code == -1)
+                            bootbox.alert({
+                                title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                                closeButton: false,
+                                centerVertical: true,
+                                message: '<h5>Аn error occurred while loading filters: ' + data.msg + '</h5>'
+                            });
+                        else {
+                            $('#filter_Policy').html('');
+                            $('#filter_SellerType').html('');
+                            $('#filter_PenaltyType').html('');
+                            $('#filter_HPApprovalStatus').html('');
+                            $('#filter_SellerSubType').html('');
+                            $('#filter_ProductType').html('');
+                            $('#filter_SellerName').html('');
+
+                            data.msg.filter(e => e.type == 0).forEach(function (value) {
+                                $('#filter_Policy').append('<option value="' + value.id + '" selected="selected">' + value.value + '</option>');
+                            });
+                            data.msg.filter(e => e.type == 1).forEach(function (value) {
+                                $('#filter_SellerType').append('<option value="' + value.id + '" selected="selected">' + value.value + '</option>');
+                            });
+                            data.msg.filter(e => e.type == 2).forEach(function (value) {
+                                $('#filter_PenaltyType').append('<option value="' + value.id + '" selected="selected">' + value.value + '</option>');
+                            });
+                            data.msg.filter(e => e.type == 6).forEach(function (value) {
+                                $('#filter_HPApprovalStatus').append('<option value="' + value.id + '" selected="selected">' + value.value + '</option>');
+                            });
+                            data.msg.filter(e => e.type == 7).forEach(function (value) {
+                                $('#filter_SellerSubType').append('<option value="' + value.value + '" selected="selected">' + value.value + '</option>');
+                            });
+                            data.msg.filter(e => e.type == 8).forEach(function (value) {
+                                $('#filter_ProductType').append('<option value="' + value.id + '" selected="selected">' + value.value + '</option>');
+                            });
+                            filterOnChange(e);
+                            $('.selectpicker').selectpicker('refresh');
+                        }
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                });
+            }
+            loadLastPage = "0";
+            hideprogress = true;
+            $('#tbl_notifications').DataTable().ajax.reload();
+            hideprogress = false;
+        };
+
+    </script>
+
+
+
+}

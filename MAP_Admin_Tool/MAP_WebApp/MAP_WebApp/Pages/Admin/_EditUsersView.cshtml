@@ -1,0 +1,71 @@
+﻿<div class="modal fade" id="EditDlg" tabindex="-1" role="dialog" aria-labelledby="userModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="Modal_Edit_Title">Edit user</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <form id="edit_frm" method="post" action="abv.bg/postcustomdata">
+                    <div class="form-group row">
+                        <label for="edFirstName" class="col-4 col-form-label">First Name:</label>
+                        <div class="col-sm-8">
+                            <input id="edFirstName" name="edFirstName" class="form-control" placeholder="Enter first name" required oninvalid="logError(-1,'Please fill \'First Name\' field!');" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="edLastName" class="col-sm-4 col-form-label">Last Name:</label>
+                        <div class="col-sm-8">
+                            <input id="edLastName" name="edLastName" class="form-control" placeholder="Enter last name" required oninvalid="logError(-1,'Please fill \'Last Name\' field!');" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="edeMail" class="col-sm-4 col-form-label">eMail:</label>
+                        <div class="col">
+                            <input id="edeMail" name="edeMail" class="form-control" placeholder="Enter valid E-Mail" required oninvalid="logError(-1,'Please fill \'eMail\' field!');" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="edUserGroup" class="col-sm-4 col-form-label">User Group:</label>
+                        <div class="col">
+                            <select id="edUserGroup" name="edUserGroup" asp-items="@Model.UserGroups" class="form-control selectpicker" title="Select user group" required oninvalid="logError(-1,'Please select \'User Group\'!');">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="edBlocked" class="col-sm-4 col-form-label">Blocked:</label>
+                        <div class="col">
+                            <div class="custom-control custom-checkbox custom-control-inline form-control border-0">
+                                <input type="checkbox" class="custom-control-input" id="edBlocked" name="edBlocked" />
+                                <label class="custom-control-label" for="edBlocked"></label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer" style="padding-left: 0px;">
+                <div class="row" style="width: 100%">
+                    <div class="col-3 text-left" style="padding-left: 0px;">
+                        <button type="button" id="btnDeleteUser" class="btn btn-sm btn-danger" style="min-width:90px">Delete</button>
+                    </div>
+                    <div class="col-9 text-right">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnSaveUser" style="min-width:90px">Save</button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal" style="min-width:90px">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" style="height:auto; margin-bottom:5px">
+                <div class="alert-success text-center" style="width:100%" id="success_span" hidden></div>
+                <div class="alert-danger text-center" style="width:100%" id="error_span" hidden></div>
+            </div>
+        </div>
+    </div>
+</div>

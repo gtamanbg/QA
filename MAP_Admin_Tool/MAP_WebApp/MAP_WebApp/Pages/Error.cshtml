@@ -1,0 +1,21 @@
+﻿@page "{code?}"
+@model ErrorModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div style="width:60%; margin:0 auto;">
+    <h4>Error @(Model.Code.ToString() != "0"? Model.Code.ToString() : "")</h4>
+    <br />
+    <h6 class="text-danger">@Model.Message</h6>
+    <br />
+    @if (Model.ShowRequestId)
+    {
+        <p>
+            <strong>Request ID:</strong> <code>@Model.RequestId</code>
+        </p>
+    }
+    <br />
+</div>
+
+

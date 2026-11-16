@@ -1,0 +1,16 @@
+﻿
+    <ul class="navbar-nav text-sm-left mx-auto">
+        @*mx-auto*@
+         @if (ViewData["UserGroup_Id"] != null && new int[] { 1, 6}.Contains((int)ViewData["UserGroup_Id"]))
+         {
+            <li class="nav-item @(ViewBag.SubNavPage == "Users" ? "active" : "")" style="margin-left: 10px">
+                <a class="nav-link text-light" href="/Admin/Index">Users</a>
+            </li>
+         }
+         @if (ViewData["UserGroup_Id"] != null && new int[] { 1 }.Contains((int)ViewData["UserGroup_Id"]))
+         {
+            <li class="nav-item @(ViewBag.SubNavPage == "Logs" ? "active" : "")" style="margin-left: 20px">
+                <a class="nav-link text-light" href="/Admin/Logs">Logs</a>
+            </li>
+         }
+    </ul>

@@ -1,0 +1,56 @@
+﻿@page
+@model MAP_WebApp.Pages.User.IndexModel
+@{
+    ViewData["Title"] = "MyAccount";
+    ViewBag.Current = "MyAccount";
+}
+
+<div class="row" style="min-height: 50px; width:80%">
+</div>
+<form>
+    <div class="row">
+        <div class="col-sm-2">
+            <label for="userName">User Name</label>
+        </div>
+        <div class="col-sm-4">
+            <input type="text" class="form-control" id="userName" readonly value="@Model.UserName">
+        </div>
+        <div class="col-sm-8">
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-2">
+            <label for="givenName">Given Name</label>
+        </div>
+        <div class="col-sm-4">
+            <input type="text" class="form-control" id="givenName" readonly value="@Model.GivenName">
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-sm-2">
+            <label for="familyName">Family Name</label>
+        </div>
+        <div class="col-sm-4">
+            <input type="text" class="form-control" id="familyName" readonly value="@Model.FamilyName">
+        </div>
+    </div>
+</form>
+@*<br />
+<br />
+<br />*@
+@*@if (@Model.Userx != null)
+{
+    @foreach (var a in @Model.Userx.Claims)
+    {
+        <div class="row">
+            <div class="col-sm-2">
+            </div>
+            <div class="col-sm-4">
+                <p>@a</p>
+            </div>
+        </div>
+    }
+}*@
+

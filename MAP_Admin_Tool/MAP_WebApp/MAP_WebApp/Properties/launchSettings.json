@@ -1,0 +1,30 @@
+{
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "MAP_WebApp": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "_AppConfigURL": "DMgQR5gDOs+T0ofjRaSvM5PU2TQRNV5zgSAFEQHUpzmWOGtrrcrILRjhQUFlhgcv",
+        "_dbConnectionStringLocal": "Server=sql01-dev.dsmengines.net;Database=HPI_MAPQC_WebTool;MultipleActiveResultSets=true;Column Encryption Setting=Enabled;TrustServerCertificate=True;Authentication=Active Directory Default;"
+      },
+      "hotReloadEnabled": true,
+      "applicationUrl": "https://localhost:58502;http://localhost:58501/"
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:58499/",
+      "sslPort": 44359
+    }
+  }
+}

@@ -1,0 +1,819 @@
+﻿@page
+@model MAP_WebApp.Pages.ViolationSuppliesDetail.IndexModel
+@{
+    ViewData["Title"] = "Home";
+    ViewBag.Current = "Home";
+}
+@Html.AntiForgeryToken()
+<partial name="_EditContatc.cshtml" />
+<partial name="_EditAddress.cshtml" />
+<partial name="_EditReason.cshtml" />
+<partial name="_AddReplacements.cshtml" />
+
+<div style="width:100%; margin:0 auto;">
+    <div class="row" style="min-height: 20px; width:100%">
+    </div>
+    <div class="row" style="width:100%">
+        <div class="col col-7">
+            <h4><u>Seller Summary</u></h4>
+            <br />
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                    Seller Name
+                </dt>
+                <dd id="seller_Name">
+                    @Model.NotificationInfo.Seller_Name
+                </dd>
+            </dl>
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                    Seller DBA
+                </dt>
+                <dd id="Seller_DBA">
+                    @Model.NotificationInfo.Seller_DBA
+                </dd>
+            </dl>
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                    New Location ID
+                </dt>
+                <dd id="LID">
+                    @Model.NotificationInfo.LID
+                </dd>
+            </dl>
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                    Storefront Name
+                </dt>
+                <dd id="LID">
+                    @Model.NotificationInfo.StoreFrontName
+                </dd>
+            </dl>
+            <br />
+
+            <div class="row">
+                <div class="col" id="accContacts">
+                    <dl class="row my-0" id="Contact1Row">
+                        <dt class="collabel">
+                            Seller Contact
+                            </dt>
+                        <dd>
+                            <div class="row">
+                                <div class="col" style="padding-right:5px">
+                                    <input id="Contact1" readonly type="text" isinternal="0" class="form-control form-control-sm" placeholder="Enter valid E-Mail" onchange="OnChange();">
+                                </div>
+                                <div class="col-1" style="padding-left:0px;padding-top:3px">
+                                    <img src="~/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="Contact1" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />
+                                </div>
+                                <div class="col-1" style="padding-left:3px;padding-top:3px">
+                                    <img src="~/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="Contact1" title="Remove" onclick="RemoveContact(this);" />
+                                </div>
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" id="lbAddContact">
+                        <dt class="collabel-2">
+                        </dt>
+                        <dd style="cursor:pointer;color:#0096D6" onclick="AddMailManu(0,'')">
+                            +Add contact
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col" id="intContacts">
+                    <dl class="row my-0" id="Email1Row">
+                        <dt class="collabel">
+                            Internal Contact
+                            </dt>
+                        <dd>
+                            <div class="row">
+                                <div class="col" style="padding-right:5px">
+                                    <input id="Email1" readonly type="text" isinternal="1" class="form-control form-control-sm" placeholder="Enter valid E-Mail" onchange="OnChange();">
+                                </div>
+                                <div class="col-1" style="padding-left:0px;padding-top:3px">
+                                    <img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="Email1" data-toggle="modal" data-target="#EditContactDlg" title="Edit" />
+                                </div>
+                                <div class="col-1" style="padding-left:3px;padding-top:3px">
+                                    <img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="Email1" title="Remove" onclick="RemoveContact(this);" />
+                                </div>
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl class="row row-10" id="lbAddEMail">
+                        <dt class="collabel-2">
+                        </dt>
+                        <dd style="cursor:pointer;color:#0096D6" onclick="AddMailManu(1,'')">
+                            +Add contact
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                </dt>
+                <dd>
+                </dd>
+            </dl>
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                    Address
+                </dt>
+                <dd>
+                    <div class="row">
+                        <div class="col" style="padding-right:5px">
+                            <input id="Address" type="text" readonly class="form-control form-control-sm" placeholder="Enter valid location">
+                        </div>
+                        <div class="col-1" style="padding-left:0px;padding-top:3px">
+                            <img src="/img/edit.png" style="width: 22px;cursor: pointer;" href="#" data-id="Address" data-toggle="modal" data-target="#EditAddressDlg" title="Edit" />
+                        </div>
+                        <div class="col-1" style="padding-left:3px;padding-top:3px">
+                            <img src="/img/delete2.png" style="width: 22px;cursor: pointer;" href="#" data-id="Address" title="Remove" onclick="RemoveAddress(this);" />
+                        </div>
+                    </div>
+                </dd>
+            </dl>
+            <dl class="row row-10">
+                <dt class="collabel-2">
+                </dt>
+                <dd>
+                    <div class="row">
+                        <div class="col" style="padding-right:5px">
+                            <input id="Address2" type="text" readonly class="form-control form-control-sm" placeholder="Enter valid location">
+                        </div>
+                        <div class="col-1" style="padding-left:0px;padding-top:3px">
+                            <img src="/img/blank.png" style="width: 22px" />
+                        </div>
+                        <div class="col-1" style="padding-left:3px;padding-top:3px">
+                            <img src="/img/blank.png" style="width: 22px" />
+                        </div>
+                    </div>
+                </dd>
+            </dl>
+        </div>
+        <div class="col">
+            <h4><u>Compliance Summary</u></h4>
+            <br />
+            <div id="complianceSummaryHolder">
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Reporting Period
+                    </dt>
+                    <dd id="Product_Type">
+                        @Model.NotificationInfo.ReportPeriod
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Product Type
+                    </dt>
+                    <dd id="Product_Type">
+                        @Model.NotificationInfo.Product_Type
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Seller Type
+                    </dt>
+                    <dd id="SellerType">
+                        @Model.NotificationInfo.SellerSubTypeDescription
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Seller Penalty Type
+                    </dt>
+                    <dd id="SellerPenaltyType">
+                        @Model.NotificationInfo.SellerPenaltyType
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Penalty
+                    </dt>
+                    <dd id="Penalty">
+                        @Model.NotificationInfo.Penalty
+                    </dd>
+                </dl>
+                <br />
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Original Penalty
+                    </dt>
+                    <dd class="col-4">
+                        <div class="row">
+                            <div class="col-1" style="padding-left:0px">$</div>
+                            <div id="OriginalPenalty" class="col-5 text-right"></div>
+                        </div>
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Alternative % Amount
+                    </dt>
+                    <dd class="col-5" style="padding:0px">
+                        <div class="row" style="margin:0px">
+                            <div style="width:153px">
+                                <input id="SAP" type="text" onfocus="this.select();" onmouseup="return false;" class="form-control form-control-sm text-sm-right" placeholder="Enter Alternative % Amount" onkeyup="inputLineOnKeyPress(this)" onchange="SAPOnChange(this)">
+                            </div>
+                        </div>
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Adjusted Penalty
+                    </dt>
+                    <dd class="col-4">
+                        <div class="row">
+                            <div class="col-1" style="padding-left:0px">$</div>
+                            <div id="AdjustedPenalty" class="col-5 text-right"></div>
+                        </div>
+                    </dd>
+                </dl>
+                <br />
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        HP Approval Status
+                    </dt>
+                    <dd>
+                        <div style="width:153px">
+                            <select id="ApprovalStatus_id" class="form-control form-control-sm selectpicker" asp-items="@Model.ApprovalStatusList" onchange="OnChange();">
+                            </select>
+                        </div>
+                    </dd>
+                </dl>
+                <dl class="row row-10">
+                    <dt class="collabel-2">
+                        Notes
+                    </dt>
+                    <dd>
+                        <div style="width:153px">
+                            <input id="Notes" type="text" class="form-control form-control-sm" placeholder="Enter notes" onchange="OnChange();">
+                        </div>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <h4>
+        <div class="row" style="margin:0px;padding:0px">
+            <div class="col text-sm-left" style="margin:0px;padding:0px">
+                <u>Violation Detail</u>
+            </div>
+            <div class="col text-sm-right" style="margin:0px;padding:0px">
+                <button id="btnAdd" style="width:150px" type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddReplacementsDlg">Add replacement</button>
+                <button id="btnSave" style="width:90px" type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </h4>
+    <table id="tblViolationDetails" class="table table-sm display" style="width:100%">
+        <thead>
+            <tr>
+                <th class="text-sm-left" style="padding-right:0px;">
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Collected Date
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Data Source
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Product Type
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    SKU
+                </th>
+                <th class="text-sm-left" style="padding-right:0px;">
+                    Market
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    Screenshot URL
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    Seller Advertised Price
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    Lowest Possible Price
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    MAP
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    MAP - Seller Ad Price
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    Tier Pass Through
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    HP Approval Status
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    Notes
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    Reason
+                </th>
+                <th class="text-sm-left" style="padding-right:4px;">
+                    HP Reason
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        <tbody>
+    </table>
+
+</div>
+
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/Select.css">
+    <link rel="stylesheet" href="~/css/Site.css">
+    <script src="~/js/bootstrap-select.min.js"></script>
+    <script src="~/js/site.js"></script>
+
+    <link href="~/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/lib/bootbox.js/bootbox.min.js"></script>
+
+    <script>
+        var NotificationId = '@Model.NotificationInfo.Id'
+        var pblReason;
+        var pblHPReason;
+
+        $(document).ready(function () {
+            var Address2 = '';
+            $('#SAP').attr('originalpenalty', parseFloat('@Model.NotificationInfo.OriginalPenalty'));
+            $('#SAP').attr('basepenalty',parseFloat('@Model.NotificationInfo.BasePenalty'));
+            $('#SAP').attr('country', '@Model.NotificationInfo.Country_id');
+            
+            if('@Model.NotificationInfo.SuppliesAlternativePercent' != '')
+                $('#SAP').val(parseFloat('@Model.NotificationInfo.SuppliesAlternativePercent'));
+            $('#OriginalPenalty').text(NumberWithCommas(parseFloat('@Model.NotificationInfo.OriginalPenalty'),0));
+            $('#AdjustedPenalty').text(NumberWithCommas(parseFloat('@Model.NotificationInfo.AdjustedPenalty'),0));
+
+            if ('@Model.NotificationInfo.RemoveRepButton' == '1')
+                $('#btnAdd').remove();
+            if ('@Model.NotificationInfo.AccContact1_eMail' != '')
+                $('#Contact1').val(strDecode('@Model.NotificationInfo.AccContact1_eMail'),1);
+            if ('@Model.NotificationInfo.AccContact2_eMail' != '')
+                AddMailManu(0, 2, strDecode('@Model.NotificationInfo.AccContact2_eMail'), 1);
+            if ('@Model.NotificationInfo.AccContact3_eMail' != '')
+                AddMailManu(0, 3, strDecode('@Model.NotificationInfo.AccContact3_eMail'),1);
+            if ('@Model.NotificationInfo.AccContact4_eMail' != '')
+                AddMailManu(0, 4, strDecode('@Model.NotificationInfo.AccContact4_eMail'),1);
+            if ('@Model.NotificationInfo.AccContact5_eMail' != '')
+                AddMailManu(0, 5, strDecode('@Model.NotificationInfo.AccContact5_eMail'),1);
+            if ('@Model.NotificationInfo.AccContact6_eMail' != '')
+                AddMailManu(0, 6, strDecode('@Model.NotificationInfo.AccContact6_eMail'),1);
+
+            if ('@Model.NotificationInfo.IntContact1_eMail' != '')
+                $('#Email1').val(strDecode('@Model.NotificationInfo.IntContact1_eMail'),1);
+            if ('@Model.NotificationInfo.IntContact2_eMail' != '')
+                AddMailManu(1, 2, strDecode('@Model.NotificationInfo.IntContact2_eMail'),1);
+            if ('@Model.NotificationInfo.IntContact3_eMail' != '')
+                AddMailManu(1, 3, strDecode('@Model.NotificationInfo.IntContact3_eMail'),1);
+            if ('@Model.NotificationInfo.IntContact4_eMail' != '')
+                AddMailManu(1, 4, strDecode('@Model.NotificationInfo.IntContact4_eMail'),1);
+            if ('@Model.NotificationInfo.IntContact5_eMail' != '')
+                AddMailManu(1, 5, strDecode('@Model.NotificationInfo.IntContact5_eMail'),1);
+            if ('@Model.NotificationInfo.IntContact6_eMail' != '')
+                AddMailManu(1, 6, strDecode('@Model.NotificationInfo.IntContact6_eMail'), 1);
+
+            if ('@Model.NotificationInfo.Reviewee_Notes' != '')
+                $('#Notes').val(strDecode('@Model.NotificationInfo.Reviewee_Notes'));
+            if ('@Model.NotificationInfo.Address' != '')
+                $('#Address').val(strDecode('@Model.NotificationInfo.Address'));
+            if ('@Model.NotificationInfo.City' != '')
+                Address2 = strDecode('@Model.NotificationInfo.City') + ', ';
+            if ('@Model.NotificationInfo.State' != '')
+                Address2 += strDecode('@Model.NotificationInfo.State') + ' ';
+            if ('@Model.NotificationInfo.Zip' != '')
+                Address2 += strDecode('@Model.NotificationInfo.Zip');
+
+            $('#Address2').val(Address2);
+            $('#Address2').attr('data-city',strDecode('@Model.NotificationInfo.City'));
+            $('#Address2').attr('data-state',strDecode('@Model.NotificationInfo.State_id'));
+            $('#Address2').attr('data-zip', strDecode('@Model.NotificationInfo.Zip'));
+
+            $.ajax({
+                url: "?handler=Reason&Id=" + NotificationId + "&ReasonType=0",
+                method: 'GET',
+                async: false
+            }).done(function (data) {
+                if (data.code == -1) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while loading reasons:' + data.msg + '</h5>'
+                    });
+                }
+                else {
+                    pblReason = data.msg;
+                };
+            });
+
+            $.ajax({
+                url: "?handler=Reason&Id=" + NotificationId + "&ReasonType=1",
+                method: 'GET',
+                async: false
+            }).done(function (data) {
+                if (data.code == -1) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while loading reasons:' + data.msg + '</h5>'
+                    });
+                }
+                else {
+                    pblHPReason = data.msg;
+                };
+            });
+            CreateStatusButtons('@Model.NotificationInfo.ShowVisibleForHP', '@Html.Raw(Model.NotificationInfo.VisibleForHP)')
+
+            $('#tblViolationDetails').DataTable({
+                "scrollX": true,
+                "serverSide": true,
+                "filter": false,
+                "ordering": false,
+                "orderMulti": false,
+                "bLengthChange": false,
+                "pageLength": 20,
+                "language": {
+                    "emptyTable": "There ware no notification details found.",
+                    "lengthMenu": "Show _MENU_ rows per page",
+                    "info": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "infoEmpty": ""
+                },
+                "sPaginationType": "full",
+                "oLanguage": {
+                    "sInfo ": "Showing _START_-_END_ of _TOTAL_ rows",
+                    "oPaginate": {
+                        "sNext": '>',
+                        "sLast": '>>',
+                        "sFirst": '<<',
+                        "sPrevious": '<'
+                    }
+                },
+                "ajax": {
+                    "url": "?handler=LoadDetails",
+                    "type": "POST",
+                    "datatype": "json",
+                    "data": function (d) {
+                        d.id = NotificationId
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    error: function () {
+                        bootbox.alert({
+                            title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                            closeButton: false,
+                            centerVertical: true,
+                            message: '<h5>Аn error occurred while loading violations!</h5>'
+                        });
+                    }
+                },
+                "columns": [
+                    { "data": "changeInfo", "render": function (data, type, full, meta) { return (data == null ? '' : '<div data-toggle="tooltip" data-placement="top" data-html="true"  title="' + full.changeInfo + '"><img src="/img/info.png" data-toggle="tooltip" data-placement="top" class="info-img"></div>' )} },
+                    { "data": "sCollected_Date", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="text-right">' + data + '</div>' } },
+                    { "data": "data_Source", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 18) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 18) + '</div>' } else return text } },
+                    { "data": "product_Type", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 18) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 18) + '</div>' } else return text } },
+                    { "data": "sku", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; return '<div data-toggle="tooltip" data-placement="top" data-html="true" title="<b>Product description:</b> ' + full.product_Description + '<br>  <b>Price location:</b> ' + full.price_Location + '">' + StrTrunc(text, 15) + '</div>' } },
+                    { "data": "market", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 12) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 12) + '</div>' } else return text }  },
+                    { "data": "screenshot_URL", 'render': function (data, type, full, meta) { var text = data == null ? '' : data;  return '<div class="text-center"><a href="' + text + '" target="_blank">Link</a></div>' } } ,
+                    { "data": "seller_Advertised_Price", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                    { "data": "lowest_Possible_Price", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                    { "data": "map", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                    { "data": "mapAdvertisedPriceDiff", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                    { "data": "tierPassThrough", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                    {
+                        "data": "approvalStatus_id", "render": function (data, type, full, meta) {
+                            return '<select id="AS_' + full.id + '" row-id="' + full.id + '" class="form-control form-control-sm float-sm selectpicker" onchange="LineFieldChange(this);">' +
+                                    '<option ' + (data == '2'? 'selected="selected"':'') + ' value="2">Approved</option>' +
+                                    '<option ' + (data == '3'? 'selected="selected"':'') + ' value="3">On Hold</option>'+
+                                    '<option ' + (data == '4'? 'selected="selected"':'') + ' value="4">Void</option>'+
+                                '</select>'}
+                    },
+                    {
+                        "data": "notes", "render": function (data, type, full, meta) {
+                            return '<div class="float-sm-right"><input id="N_' + full.id + '" row-id="' + full.id +
+                                '" class="form-control form-control-sm text-sm-right" onfocus="this.select();" onmouseup="return false;" value="' + (data == 0 ? '' : data) +
+                                '" onchange="LineFieldChange(this)" onkeyup="inputNotesOnKeyPress(this)"></div>';
+                        }
+                    },
+                    {
+                        "data": "reason_id", "render": function (data, type, full, meta) {
+                            return '<input id="R_' + full.id + '" row-id="' + full.id + '" readonly type="text" style="cursor:pointer" class="form-control form-control-sm" placeholder="Select reason" onclick="LoadReasons(this,0);" value="' + full.reason_Description + '"'+ (full.reason_id != null? 'reason_id="' + full.reason_id + '"':'') +'>';
+                        },"visible": ('@Model.NotificationInfo.HideReason' != 1)
+                    },
+                    {
+                        "data": "hpReason_id", "render": function (data, type, full, meta) {
+                            return '<input id="HPR_' + full.id + '" row-id="' + full.id + '" readonly type="text" style="cursor:pointer" class="form-control form-control-sm" placeholder="Select reason" onclick="LoadReasons(this,1);" value="' + full.hpReason_Description + '"'+ (full.hpReason_id != null? 'reason_id="' + full.hpReason_id + '"':'') +'>';
+                        },"visible": ('@Model.NotificationInfo.HideHPReason' != 1)
+                    }
+                ],
+                columnDefs: [
+                    { "targets": 0, "className": 'text-sm-left text-sm-middle', "width": "10px" },
+                    { "targets": 1, "className": 'text-sm-left text-sm-middle', "width": "85px" },
+                    { "targets": 2, "className": 'text-sm-left', "width": "80px" },
+                    { "targets": 3, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 4, "className": 'text-sm-left', "width": "70px" },
+                    { "targets": 5, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 6, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 7, "className": 'text-sm-left', "width": "130px" },
+                    { "targets": 8, "className": 'text-sm-left', "width": "130px" },
+                    { "targets": 9, "className": 'text-sm-left', "width": "100px" },
+                    { "targets": 10, "className": 'text-sm-left', "width": "120px" },
+                    { "targets": 11, "className": 'text-sm-left', "width": "120px" },
+                    { "targets": 12, "className": 'text-sm-center', "width": "115px" },
+                    { "targets": 13, "className": 'text-sm-left', "width": "140px" },
+                    { "targets": 14, "className": 'text-sm-left', "width": "140px" },
+                    { "targets": 15, "className": 'text-sm-left', "width": "140px" }
+
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    var id = aData.id;
+                    var master_Id = aData.master_Id;
+                    $(nRow).attr("id", "tr_" + id);
+                    $(nRow).attr("row-id", id);
+                    $(nRow).attr("data-Master_id", master_Id);
+                    $(nRow).attr("data-changed", 0);
+                    return nRow;
+                },
+                "drawCallback": function( settings ) {
+                    $('.selectpicker').selectpicker('refresh');
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+
+        function inputNotesOnKeyPress(input) {
+            if (($('#AS_' + $(input).attr('row-id')).val() == 3 || $('#AS_' + $(input).attr('row-id')).val() == 4) && $('#N_' + $(input).attr('row-id')).val() == "")
+                SetInputColor('#N_' + $(input).attr('row-id'), '#ff0000')
+            else
+                SetInputColor('#N_' + $(input).attr('row-id'), '#0026ff')
+        };
+
+        $('#btnSave').on('click', function () {
+            var lcData = ViolationDataSerialization("");
+            if (lcData == -1)
+                return;
+            $.ajax({
+                "type": "POST",
+                "url": "?handler=SaveNotification",
+                "contentType": "application/json; charset=utf-8",
+                "dataType": "json",
+                "data": JSON.stringify(lcData),
+                "success": function (response) {
+                    if (response.code != -1) {
+                        if (response.msg != null)
+                            bootbox.alert({
+                                title: 'Information',
+                                closeButton: false,
+                                centerVertical: true,
+                                message: '<h5>' + st(response.msg) + '</h5>',
+                                callback: function (result) {location.reload();}
+                            });
+                        else
+                            location.reload();
+                    }
+                    else {
+                        bootbox.alert({ title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>', closeButton: false, centerVertical: true, message: '<h5>Аn error occurred while saving data: ' + st(response.msg) + '</h5>'});
+                    }
+                },
+                "error": function (xhr, ajaxOptions, thrownError) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while saving data:' + thrownError.msg + '</h5>'
+                    });
+                },
+                headers: {
+                    "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+            });
+        });
+
+        $('#btnAdd').on('click', function () {
+            if ($('#tblViolationReplacements').hasClass('dataTable')) {
+                $('#tblViolationReplacements').DataTable().ajax.reload();
+            }
+            else {
+                $('#tblViolationReplacements').DataTable({
+                    "scrollX": true,
+                    "serverSide": true,
+                    "filter": false,
+                    "ordering": false,
+                    "orderMulti": false,
+                    "bLengthChange": false,
+                    "bInfo" : false,
+                    "paging": false,
+                    "scrollY": '50vh',
+                    "scrollCollapse": true,
+                    "language": {
+                        "emptyTable": "There ware no notification details found.",
+                        "lengthMenu": "Show _MENU_ rows per page",
+                        "info": "Showing _START_-_END_ of _TOTAL_ rows",
+                        "infoEmpty": ""
+                    },
+                    "sPaginationType": "full",
+                    "oLanguage": {
+                        "sInfo ": "Showing _START_-_END_ of _TOTAL_ rows",
+                        "oPaginate": {
+                            "sNext": '>',
+                            "sLast": '>>',
+                            "sFirst": '<<',
+                            "sPrevious": '<'
+                        }
+                    },
+                    "ajax": {
+                        "url": "?handler=LoadReplacements",
+                        "type": "POST",
+                        "datatype": "json",
+                        "data": function (d) {
+                            d.id = NotificationId
+                        },
+                        headers: {
+                            "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                        },
+                        error: function () {
+                            bootbox.alert({
+                                title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                                closeButton: false,
+                                centerVertical: true,
+                                message: '<h5>Аn error occurred while loading replacements!</h5>'
+                            });
+                        }
+                    },
+                    "columns": [
+                        {
+                            "data": "checked", "render": function (data, type, full, meta) {
+                                return '<div class="text-sm-center"><div class="custom-control custom-checkbox custom-control-inline form-control-sm border-0" style="padding-top:0px;padding-bottom:0px;margine-top:0px;margine-bottom:0px">' +
+                                    '<input type="checkbox"' + (full.approvalStatus_id != 2 ? 'disabled="disabled"' : '') + ' class="custom-control-input" id="ch_' + full.id +
+                                    '" name="ch_' + full.id + '" row-id="' + full.id + '" onchange="RepLineFieldChange(this);" />' +
+                                    '<label class="custom-control-label-datatable" for="ch_' + full.id + '"></label>' +
+                                    '</div></div>'
+                            }
+                        },
+                        { "data": "sCollected_Date", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="text-right">' + data + '</div>' } },
+                        { "data": "data_Source", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 18) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 18) + '</div>' } else return text } },
+                        { "data": "product_Type", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 18) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 18) + '</div>' } else return text } },
+                        { "data": "sku", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 15) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 15) + '</div>' } else return text } },
+                        { "data": "market", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 15) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 15) + '</div>' } else return text } },
+                        { "data": "price_Location", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; if (text.length > 15) { return '<div data-toggle="tooltip" data-placement="top" title="' + text + '">' + StrTrunc(text, 15) + '</div>' } else return text } },
+                        { "data": "screenshot_URL", 'render': function (data, type, full, meta) { var text = data == null ? '' : data; return '<div class="text-center" data-toggle="tooltip" data-placement="top" title="' + text + '"><a href="' + text + '" target="_blank">Link</a></div>' } },
+                        { "data": "seller_Advertised_Price", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                        { "data": "lowest_Possible_Price", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                        { "data": "map", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                        { "data": "eligible_IR_Amount", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                        { "data": "tierPassThrough", "render": function (data, type, full, meta) { return data == null ? '' : '<div class="row"><div class="col">$</div><div class="text-right col">' + NumberWithCommas(data) + '</div></div>' } },
+                        {
+                            "data": "approvalStatus_id", "render": function (data, type, full, meta) {
+                                return '<select id="RAS_' + full.id + '" row-id="' + full.id + '" class="form-control form-control-sm selectpicker" onchange="RepLineFieldChange(this);">' +
+                                    '<option ' + (data == '1' ? 'selected="selected"' : '') + ' value="1">Not inspected</option>' +
+                                    '<option ' + (data == '2' ? 'selected="selected"' : '') + ' value="2">Accepted</option>' +
+                                    '<option ' + (data == '3' ? 'selected="selected"' : '') + ' value="3">Rejected</option>' +
+                                    '</select>'
+                            }
+                        },
+                        {
+                            "data": "reason_id", "render": function (data, type, full, meta) {
+                                lcOptions = "";
+                                pblReason.forEach(function (item) {
+                                    lcOptions += (lcOptions == ''? '':'\n') + '<option' + (data == st(item.id)? ' selected="selected"':'') + ' value="' + st(item.id) + '">' + st(item.options) + '</option>';
+                                });
+                                return '<select id="RR_' + full.id + '" row-id="' + full.id + '" class="form-control form-control-sm selectpicker" data-actions-box="true" title="Select reason" data-live-search="true" onchange="RepLineFieldChange(this);">' +
+                                        lcOptions + '</select>'}
+                        }
+                    ],
+                    columnDefs: [
+                        { "targets": 0, "className": 'text-sm-left text-sm-middle', "width": "10px" },
+                        { "targets": 1, "className": 'text-sm-left text-sm-middle', "width": "85px" },
+                        { "targets": 2, "className": 'text-sm-left', "width": "80px" },
+                        { "targets": 3, "className": 'text-sm-left', "width": "100px" },
+                        { "targets": 4, "className": 'text-sm-left', "width": "80px" },
+                        { "targets": 5, "className": 'text-sm-left', "width": "100px" },
+                        { "targets": 6, "className": 'text-sm-left', "width": "100px" },
+                        { "targets": 7, "className": 'text-sm-left', "width": "90px" },
+                        { "targets": 8, "className": 'text-sm-left', "width": "130px" },
+                        { "targets": 9, "className": 'text-sm-left', "width": "150px" },
+                        { "targets": 10, "className": 'text-sm-left', "width": "100px" },
+                        { "targets": 11, "className": 'text-sm-left', "width": "100px" },
+                        { "targets": 12, "className": 'text-sm-left', "width": "130px" },
+                        { "targets": 13, "className": 'text-sm-left', "width": "180px" },
+                        { "targets": 14, "className": 'text-sm-left', "width": "180px" }
+
+                    ],
+                    "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                        var id = aData.id;
+                        var master_Id = aData.master_Id;
+                        $(nRow).attr("id", "rtr_" + id);
+                        $(nRow).attr("row-id", id);
+                        $(nRow).attr("data-Master_id", master_Id);
+                        $(nRow).attr("data-changed", 0);
+                        return nRow;
+                    },
+                    "drawCallback": function (settings) {
+                        $('.selectpicker').selectpicker('refresh');
+                    }
+                });
+            }
+        });
+
+        function RepLineFieldChange(input) {
+            lcId = $(input).attr('row-id');
+            $('#rtr_' + lcId).attr('data-changed', 1);
+            if ($('#RAS_' + lcId).val() == '2') {
+                $('#ch_' + lcId).removeAttr('disabled');
+                $('#RR_' + lcId).val('');
+            }
+            else {
+                $('#ch_' + lcId).prop("checked", false);
+                $('#ch_' + lcId).attr('disabled', 'disabled');
+                if (($('#RAS_' + lcId).val() == '3') && $('#RR_' + lcId).val() == "") {
+                    $('#RR_' + lcId).focus();
+                    return;
+                }
+            }
+        }
+
+        $("#btnRepOk").on('click', (function (e) {
+            incorectRecord = false;
+            var ReplacementDetail = [];
+            $('#tblViolationReplacements tbody tr[data-changed="1"]').each(function (index, tr) {
+                rowId = $(tr).attr('row-id');
+                if ($('#RR_' + rowId).val() == "" && $('#RAS_' + rowId).val() == 3) {
+                    bootbox.alert({ title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>', closeButton: false, centerVertical: true, message: '<h5>Аn error occurred while saving data: Missing reason on rejected rows!</h5>'});
+                    incorectRecord = true;
+                    return;
+                }
+                ReplacementDetail.push({
+                    Id: rowId,
+                    Notification_id: NotificationId,
+                    Checked: $('#ch_' + rowId).is(":checked"),
+                    ApprovalStatus_id: $('#RAS_' + rowId).val(),
+                    Reason_id: $('#RR_' + rowId).val() == ""? null : $('#RR_' + rowId).val()
+                });
+            })
+
+            if (incorectRecord)
+                return;
+
+            $.ajax({
+                "type": "POST",
+                "url": "?handler=SaveReplacement",
+                "contentType": "application/json; charset=utf-8",
+                "dataType": "json",
+                "data": JSON.stringify(ReplacementDetail),
+                "success": function (response) {
+                    if (response.code != -1) {
+                        $('#EditDlg').modal('hide');
+                        if (response.msg != null)
+                            bootbox.alert({
+                                title: 'Information',
+                                closeButton: false,
+                                centerVertical: true,
+                                message: '<h5>' + st(response.msg) + '</h5>',
+                                callback: function (result) {
+                                    location.reload();
+                                }
+                            });
+                        else
+                            location.reload();
+                    }
+                    else {
+                        bootbox.alert({ title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>', closeButton: false, centerVertical: true, message: '<h5>Аn error occurred while saving data: ' + st(response.msg) + '</h5>'});
+                    }
+                },
+                "error": function (xhr, ajaxOptions, thrownError) {
+                    bootbox.alert({
+                        title: '<div class="row"><div class="col-1"><img src="/img/error.png" width="20" style="position:absolute; padding-top:2px"/></div><div class="col">Error</div></div>',
+                        closeButton: false,
+                        centerVertical: true,
+                        message: '<h5>Аn error occurred while adding replacements!</h5>'
+                    });
+                },
+                headers: {
+                    "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                },
+            });
+        }));
+
+        function SAPOnChange(e) {
+            if ($('#SAP').val() == '') {
+                $('#AdjustedPenalty').text(NumberWithCommas(parseFloat($('#SAP').attr('originalpenalty')),0));
+            }
+            else {
+                var penalty = $('#SAP').attr('country') == '2' ? $('#SAP').attr('basepenalty') : $('#SAP').attr('originalpenalty')/0.02;
+                $('#AdjustedPenalty').text(NumberWithCommas(($('#SAP').val() / 100) * penalty, 0));
+            }
+            OnChange(e);
+            return;
+        }
+
+    </script>
+}

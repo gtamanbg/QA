@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - OmniChannel Compliance Tool </title>
+    <link href="~/dsmlogo.png" rel="shortcut icon" type="image/x-icon" />
+
+    <script src="~/lib/jquery/jquery.min.js" asp-append-version="true"></script>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+
+    <script src="/js/site.js" asp-append-version="true"></script>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom">
+            <div class="container">
+                <img src="~/img/logo.png" /><div style="font-size:25px;">OmniChannel Compliance Tool</div>
+
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row">
+                    <ul class="navbar-nav flex-grow-1" style="padding-left:30px;">
+
+                        <li class="nav-item @(ViewBag.Current == "Home" ? "active" : "") " style="margin-left: 20px">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                        </li>
+                        <li class="nav-item @(ViewBag.Current == "Contacts" ? "active" : "") " style="margin-left: 20px">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Contacts/Index">Contacts</a>
+                        </li>
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+        <nav class="navbar navbar-dark navbar-expand-sm navbar-toggleable-sm  border-bottom box-shadow" style="background-color:#0096d6; height:40px">
+            <div class="container">
+                @if (ViewBag.SecondNavBar != null)
+                {
+                    <partial name="@ViewBag.SecondNavBar" />
+                }
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <partial name="_CookieConsentPartial" />
+        <main role="main" class="pb-3">
+            <div class="text-left" style="padding-top:10px">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="https://dsmengines.com/" align="right" style="width:100%; font-size:10px; text-align: right;">&copy; @DateTime.Now.Year.ToString() DSM Engines LLC.  All Rights Reserved.</a>
+    </div>
+
+        <script src="~/lib/jquery/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/lib/he/he.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <partial name="_LoadingModal.cshtml" />
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
