@@ -1,6 +1,6 @@
 # Global coding preferences
 
-Apply these preferences to all Codex coding work, not only the MAP project.
+Apply these preferences to all Claude coding work.
 
 1. Match the surrounding code's formatting and style. New code should look as though the same author wrote it: preserve indentation, naming conventions, keyword casing, comment style, and layout. Avoid unrelated reformatting.
 2. In SQL, do not prefix string literals with N unless Unicode preservation or another concrete technical requirement makes it necessary.
