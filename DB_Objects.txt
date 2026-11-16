@@ -1,0 +1,779 @@
+USE [HPI_MAPQC_WebTool]
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[D_Notification](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Notification_ID] [int] NOT NULL,
+	[Location_id] [nvarchar](20) NOT NULL,
+	[Seller_id] [int] NULL,
+	[SellerDBA_id] [int] NULL,
+	[ProductType_id] [int] NULL,
+	[Penalty_id] [int] NULL,
+	[Penalty_Impact] [nvarchar](50) NULL,
+	[Notes] [nvarchar](1000) NULL,
+	[Policy_id] [int] NULL,
+	[SellerSubType_id] [int] NOT NULL,
+	[PenaltyType_id] [int] NULL,
+	[ApprovalStatus_id] [int] NULL,
+	[Contacts_id] [int] NULL,
+	[PartnerFirstStatusPrint_id] [int] NULL,
+	[PartnerFirstStatusSupplies_id] [int] NULL,
+	[PartnerFirstStatusHighest_id] [int] NULL,
+	[PreviousDeliveryDate] [date] NULL,
+	[PreviousStrike] [nvarchar](50) NULL,
+	[PenaltyPeriodStart] [date] NULL,
+	[PenaltyPeriodEnd] [date] NULL,
+	[SuspensionStart] [date] NULL,
+	[SuspensionEnd] [date] NULL,
+	[AnnualSalesOutNDP] [decimal](38, 20) NULL,
+	[ProductSuspensionImpact] [decimal](38, 20) NULL,
+	[VisibleForHP] [int] NULL,
+	[SellerPenaltyType_id] [int] NULL,
+	[C_User_ID] [nvarchar](32) NULL,
+	[C_DateTime] [datetime] NULL,
+	[ThresholdValue] [int] NOT NULL,
+	[Changed] [bit] NOT NULL,
+	[ProductCategory_id] [int] NOT NULL,
+	[MPASeller] [int] NOT NULL,
+	[MarketplaceViolations] [int] NOT NULL,
+	[GenerationDate] [datetime] NULL,
+	[ReportStartDate] [datetime] NULL,
+	[ReportEndDate] [datetime] NULL,
+	[StoreFrontName_id] [int] NULL,
+	[SuppliesAlternativePercent] [decimal](38, 20) NULL,
+	[Country_Id] [int] NOT NULL,
+	[BasePenalty] [decimal](38, 20) NULL,
+	[SellerQualificationStatus_id] [int] NOT NULL,
+ CONSTRAINT [PK_D_Notification] PRIMARY KEY CLUSTERED
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[D_Notification] ADD  CONSTRAINT [DF_D_Notification_VisibleForHP]  DEFAULT ((0)) FOR [VisibleForHP]
+GO
+
+ALTER TABLE [dbo].[D_Notification] ADD  CONSTRAINT [DF_D_Notification_Changed]  DEFAULT ((0)) FOR [Changed]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_D_NotificationContact] FOREIGN KEY([Contacts_id])
+REFERENCES [dbo].[D_NotificationContact] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_D_NotificationContact]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_ApprovalStatus] FOREIGN KEY([ApprovalStatus_id])
+REFERENCES [dbo].[N_ApprovalStatus] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_ApprovalStatus]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_Country] FOREIGN KEY([Country_Id])
+REFERENCES [dbo].[N_Country] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_Country]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_Penalty] FOREIGN KEY([Penalty_id])
+REFERENCES [dbo].[N_Penalty] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_Penalty]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_PenaltyType] FOREIGN KEY([PenaltyType_id])
+REFERENCES [dbo].[N_PenaltyType] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_PenaltyType]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_Policy] FOREIGN KEY([Policy_id])
+REFERENCES [dbo].[N_Policy] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_Policy]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_ProductCategory] FOREIGN KEY([ProductCategory_id])
+REFERENCES [dbo].[N_ProductCategory] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_ProductCategory]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_ProductType] FOREIGN KEY([ProductType_id])
+REFERENCES [dbo].[N_ProductType] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_ProductType]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_Seller] FOREIGN KEY([Seller_id])
+REFERENCES [dbo].[N_Seller] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_Seller]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_SellerDBA] FOREIGN KEY([SellerDBA_id])
+REFERENCES [dbo].[N_SellerDBA] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_SellerDBA]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_SellerQualificationStatus] FOREIGN KEY([SellerQualificationStatus_id])
+REFERENCES [dbo].[N_SellerQualificationStatus] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_SellerQualificationStatus]
+GO
+
+ALTER TABLE [dbo].[D_Notification]  WITH CHECK ADD  CONSTRAINT [FK_D_Notification_N_StoreFrontName] FOREIGN KEY([StoreFrontName_id])
+REFERENCES [dbo].[N_StoreFrontName] ([Id])
+ON UPDATE CASCADE
+GO
+
+ALTER TABLE [dbo].[D_Notification] CHECK CONSTRAINT [FK_D_Notification_N_StoreFrontName]
+GO
+
+
+CREATE   FUNCTION [dbo].[fn_GetFisrtAndLastDayOfWeek](
+	@inDate nvarchar(50)
+)
+RETURNS @Result TABLE(
+	FistDayOfWeek datetime,
+	LastDayOfWeek datetime
+)
+AS
+BEGIN
+	DECLARE @Date datetime = COALESCE(NULLIF(@inDate,''),GETDATE())
+
+	INSERT @Result
+	SELECT
+		DATEADD(wk, 0, DATEADD(DAY, 1-DATEPART(WEEKDAY, @Date), DATEDIFF(dd, 0, @Date))), --First day previous week,
+		DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @Date), DATEDIFF(dd, 0, @Date))) --Last day previous week
+		--DATEADD(wk, -1, DATEADD(DAY, 1-DATEPART(WEEKDAY, @Date), DATEDIFF(dd, 0, @Date))), --First day previous week,
+		--DATEADD(wk, 0, DATEADD(DAY, 0-DATEPART(WEEKDAY, @Date), DATEDIFF(dd, 0, @Date))) --Last day previous week
+
+	RETURN
+END
+GO
+
+CREATE   PROCEDURE [dbo].[usp_GetDataSets](
+	@inTemplate_Id	nvarchar(32),
+	@inExtraParams	nvarchar(MAX)
+)
+AS
+BEGIN
+	DECLARE @Template_Id	nvarchar(32)	= @inTemplate_Id
+	DECLARE @ExtraParams	nvarchar(max)	= NULLIF(@inExtraParams,'')
+
+	DECLARE @Result TABLE(
+		DSIndex		tinyint,
+		SheetName	nvarchar(20),
+		Data		nvarchar(max)
+	)
+
+	DECLARE @DSIndex		tinyint
+	DECLARE @Command		nvarchar(max)
+	DECLARE @SheetName		nvarchar(20)
+	DECLARE @CommandResult	nvarchar(max)
+	DECLARE @SQLText		nvarchar(max)
+
+	DECLARE db_cursor CURSOR LOCAL FAST_FORWARD FOR
+	SELECT
+		DSIndex,
+		Command,
+		SheetName
+	FROM N_ExportTemplatesDataSources WITH(NOLOCK)
+	WHERE Master_Id = @Template_Id
+
+	OPEN db_cursor
+	FETCH NEXT FROM db_cursor INTO @DSIndex, @Command, @SheetName
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @ExtraParams IS NOT NULL
+		SELECT
+			@Command = REPLACE(@Command,LEFT(Value,CHARINDEX('=',Value)-1), '''' + REPLACE(RIGHT(Value,LEN(Value) - CHARINDEX('=',Value)),'''','''''') + '''')
+		FROM fn_Split(@ExtraParams,'^') as params
+
+		--select @command
+
+		SET @SQLText = N'SELECT ' +CAST(@DSIndex As nvarchar(3))+ ', '''+ @SheetName + ''', (' + @Command + ' FOR XML RAW, ROOT(''DataSet'')) As DataRows'
+		INSERT INTO @Result(DSIndex,SheetName,Data)
+		exec sp_executesql @SQLText
+
+		FETCH NEXT FROM db_cursor INTO @DSIndex, @Command, @SheetName
+	END
+	CLOSE db_cursor
+	DEALLOCATE db_cursor
+
+	SELECT * FROM @Result
+
+END
+GO
+
+CREATE FUNCTION [dbo].[fn_GetNotificationContactList](
+	@inUser_id			nvarchar(32),
+	@inFromDate			datetime,
+	@inPolicy			nvarchar(4000),
+	@inSellerType		nvarchar(4000),
+	@inSellerSubType	nvarchar(4000),
+	@inPenaltyType		nvarchar(4000),
+	@inSellerName		nvarchar(4000),
+	@inHPApprovalStatus	nvarchar(4000),
+	@inProductType		nvarchar(4000),
+	@inCountry_id		int
+)
+RETURNS @Result TABLE(
+	Id							int,
+	Seller_Id					int,
+	Seller_Name					nvarchar(300),
+	LID							nvarchar(20),
+	ProductCategory				nvarchar(100),
+	IntContact1_eMail			nvarchar(100),
+	IntContact2_eMail			nvarchar(100),
+	IntContact3_eMail			nvarchar(100),
+	IntContact4_eMail			nvarchar(100),
+	IntContact5_eMail			nvarchar(100),
+	IntContact6_eMail			nvarchar(100),
+	Country						nvarchar(50)
+)
+AS
+BEGIN
+	DECLARE @User_id			nvarchar(32)	= @inUser_id
+	DECLARE @FromDate			datetime		= @inFromDate
+	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))
+	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')
+	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')
+	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')
+	DECLARE @SellerName			nvarchar(4000)	= NULLIF(@inSellerName,'')
+	DECLARE @HPApprovalStatus	nvarchar(4000)	= NULLIF(@inHPApprovalStatus,'')
+	DECLARE @SellerSubType		nvarchar(4000)	= NULLIF(@inSellerSubType,'')
+	DECLARE @ProductType		nvarchar(4000)	= NULLIF(@inProductType,'')
+	DECLARE @Country_id			int				= @inCountry_id
+
+
+	INSERT @Result(Id,Seller_Id,Seller_Name,LID,ProductCategory,IntContact1_eMail,IntContact2_eMail,
+		IntContact3_eMail,IntContact4_eMail,IntContact5_eMail,IntContact6_eMail,Country)
+	SELECT
+		DENSE_RANK() OVER(ORDER BY Id,COALESCE(CategoryEMail,'')) Ranking,
+		Id,
+		Seller_Name,
+		Location_id,
+		CategoryEMail,
+		IntContact1_eMail,
+		IntContact2_eMail,
+		IntContact3_eMail,
+		IntContact4_eMail,
+		IntContact5_eMail,
+		IntContact6_eMail,
+		CountryName
+	FROM (
+		SELECT DISTINCT
+			DENSE_RANK() OVER(PARTITION BY S.Id, COALESCE(C.CategoryEMail,'') ORDER BY S.Id,
+			COALESCE(S.Name,''),COALESCE(H.Location_id,''),COALESCE(C.CategoryEMail,''),
+			COALESCE(C.Email1,'') DESC,COALESCE(C.Email2,'') DESC,COALESCE(C.Email3,'') DESC,
+			COALESCE(C.Email4,'') DESC,COALESCE(C.Email5,'') DESC,COALESCE(C.Email6,'') DESC ) AS Ranking,
+			S.Id,
+			COALESCE(S.Name,'') AS Seller_Name,--H.Seller_Name,
+			COALESCE(H.Location_id,'') AS Location_id,
+			COALESCE(C.CategoryEMail,'') AS CategoryEMail,--COALESCE(N_ProductCategory.Options,''),--H.Product_Type,
+			COALESCE(C.Email1,'') AS IntContact1_eMail,
+			COALESCE(C.Email2,'') AS IntContact2_eMail,
+			COALESCE(C.Email3,'') AS IntContact3_eMail,
+			COALESCE(C.Email4,'') AS IntContact4_eMail,
+			COALESCE(C.Email5,'') AS IntContact5_eMail,
+			COALESCE(C.Email6,'') AS IntContact6_eMail,
+			CN.Name AS CountryName
+		FROM D_Notification H WITH(NOLOCK)
+		INNER JOIN D_NotificationContact C WITH(NOLOCK) ON C.Id = H.Contacts_id
+		LEFT JOIN N_SellerSubType WITH(NOLOCK) ON N_SellerSubType.Id = H.SellerSubType_id
+		LEFT JOIN N_SellerType WITH(NOLOCK) ON N_SellerType.Id = N_SellerSubType.SellerType_id
+		LEFT JOIN N_Users CurrUser ON CurrUser.Id = @User_id
+		LEFT JOIN N_Seller S WITH(NOLOCK) ON S.Id = H.Seller_id
+		LEFT JOIN N_Country CN WITH(NOLOCK) ON CN.Id = H.Country_Id
+		WHERE H.Country_Id = @Country_id
+			AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate >= @FromDate)))
+			AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate <= @ToDate)))
+			AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))
+			AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))
+			AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))
+			AND ((@PenaltyType IS NOT NULL) AND (H.PenaltyType_id in (SELECT Value FROM fn_Split(@PenaltyType,','))))
+			AND ((@SellerName IS NOT NULL) AND (H.Seller_id in (SELECT Value FROM fn_Split(@SellerName,','))))
+			AND ((@HPApprovalStatus IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@HPApprovalStatus,','))))
+			AND ((@ProductType IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@ProductType,','))))
+			AND (
+				(CurrUser.UserGroup_Id = 1) OR
+				(CurrUser.UserGroup_Id = 2) OR
+				(CurrUser.UserGroup_Id = 3) OR
+				(CurrUser.UserGroup_Id = 4 AND H.VisibleForHP = 1)
+				)
+			AND H.ApprovalStatus_id < 4
+	)T
+	WHERE Ranking = 1
+	ORDER BY Id,CategoryEMail
+
+	RETURN
+END
+GO
+
+CREATE FUNCTION [dbo].[fn_GetNotificationDetailsForExport](
+	@inUser_id			nvarchar(32),
+	@inFromDate			datetime,
+	@inPolicy			nvarchar(4000),
+	@inSellerType		nvarchar(4000),
+	@inSellerSubType	nvarchar(4000),
+	@inPenaltyType		nvarchar(4000),
+	@inSellerName		nvarchar(4000),
+	@inHPApprovalStatus nvarchar(4000),
+	@inProductType		nvarchar(4000),
+	@inCountry_id		int
+)
+RETURNS @Result TABLE(
+	Country nvarchar(50),
+	Policy nvarchar(50) NULL,
+	Location_id nvarchar(20) NULL,
+	Seller_Name nvarchar(300) NULL,
+	Seller_DBA nvarchar(100) NULL,
+	Penalty nvarchar(50) NULL,
+	Penalty_Impact nvarchar(50),
+	Product_Type nvarchar(20) NULL,
+	Product_Line nvarchar(5) NULL,
+	SKU nvarchar(255),
+	ProductDescription nvarchar(300),
+	Collected_Date nvarchar(50),
+	Screenshot_URL nvarchar(500),
+	Seller_Advertised_Price decimal(28,10),
+	Lowest_Possible_Price decimal(28,10),
+	MAP decimal(38,20),
+	MAPAdvertisedPriceDiff decimal(38, 20),
+	Eligible_IR_Amount decimal(28,10)
+)
+AS
+BEGIN
+	DECLARE @User_id			nvarchar(32)	= @inUser_id
+	DECLARE @FromDate			datetime		= @inFromDate
+	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))
+	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')
+	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')
+	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')
+	DECLARE @SellerName			nvarchar(4000)	= NULLIF(@inSellerName,'')
+	DECLARE @HPApprovalStatus	nvarchar(4000)	= NULLIF(@inHPApprovalStatus,'')
+	DECLARE @SellerSubType		nvarchar(4000)	= NULLIF(@inSellerSubType,'')
+	DECLARE @ProductType		nvarchar(4000)	= NULLIF(@inProductType,'')
+	DECLARE @Country_id			int				= @inCountry_id
+
+	INSERT @Result(Country,Policy,Location_id,Seller_Name,Seller_DBA,Penalty,Penalty_Impact,Product_Type,Product_Line,SKU,
+			ProductDescription,Collected_Date,Screenshot_URL,Seller_Advertised_Price,Lowest_Possible_Price,MAP,
+			MAPAdvertisedPriceDiff,Eligible_IR_Amount)
+	SELECT
+		C.Name,
+		N_Policy.Options,
+		H.Location_id,
+		S.Name,--H.Seller_Name,
+		SDBA.DBA,--H.Seller_DBA,
+		N_Penalty.Options AS Penalty,--H.Penalty,
+		COALESCE(CASE
+			WHEN H.Penalty_id = 1 AND H.ProductCategory_id in (1,2,5) THEN CAST(CAST(COALESCE(Alternative_Penalty,Three_Percent_of_Total,0) AS Decimal(28,10)) AS nvarchar(50))
+			WHEN (H.Penalty_id = 1 AND H.ProductCategory_id = 3) OR (N_Penalty.id = 15 AND H.Country_Id = 2) THEN CAST(CASE WHEN H.Penalty_Impact IS NOT NULL THEN CAST(COALESCE(H.Penalty_Impact,'0.00') AS Decimal(28,10)) ELSE H.Penalty_Impact END AS nvarchar(50))
+			ELSE COALESCE(CAST(CAST(H.Penalty_Impact AS Decimal(28,10)) AS nvarchar(50)),N_Penalty.Options)
+		END,'n/a'),
+		N_ProductType.Description,--H.Product_Type,
+		D.Product_Line,
+		D.SKU,
+		D.Product_description,
+		CONVERT(nvarchar(10),D.Collected_Date,101),
+		D.Screenshot_URL,
+		D.Seller_Advertised_Price,
+		D.Lowest_Possible_Price,
+		D.MAP,
+		COALESCE(D.MAP,0) - COALESCE(D.Seller_Advertised_Price,0) MAPAdvertisedPriceDiff,
+		D.Eligible_IR_Amount
+	FROM D_Notification H WITH(NOLOCK)
+	INNER JOIN D_NotificationDetail D WITH(NOLOCK) ON D.Master_Id = H.Id
+	LEFT JOIN N_Policy WITH(NOLOCK) ON N_Policy.Id = H.Policy_id
+	LEFT JOIN N_ApprovalStatus WITH(NOLOCK) ON N_ApprovalStatus.Id = H.ApprovalStatus_id
+	LEFT JOIN N_SellerSubType WITH(NOLOCK) ON N_SellerSubType.Id = H.SellerSubType_id
+	LEFT JOIN N_SellerType WITH(NOLOCK) ON N_SellerType.Id = N_SellerSubType.SellerType_id
+	LEFT JOIN N_Users ON N_Users.Id = H.C_User_ID
+	LEFT JOIN N_Seller S WITH(NOLOCK) ON S.Id = H.Seller_id
+	LEFT JOIN N_SellerDBA SDBA WITH(NOLOCK) ON SDBA.Id = H.SellerDBA_id
+	LEFT JOIN N_ProductType WITH(NOLOCK) ON N_ProductType.Id = H.ProductType_id
+	LEFT JOIN N_SellerPenaltyType WITH(NOLOCK) ON N_SellerPenaltyType.Id = H.SellerPenaltyType_id
+	LEFT JOIN N_PartnerStatus PFSS WITH(NOLOCK) ON PFSS.Id = H.PartnerFirstStatusSupplies_id
+	LEFT JOIN N_PartnerStatus PFSP WITH(NOLOCK) ON PFSP.Id = H.PartnerFirstStatusPrint_id
+	LEFT JOIN N_Penalty  WITH(NOLOCK) ON N_Penalty.Id = H.Penalty_id
+	OUTER APPLY fn_GetNotificationTotal(@User_id,H.Id)
+	LEFT JOIN N_Users CurrUser ON CurrUser.Id = @User_id
+	LEFT JOIN N_Country C WITH(NOLOCK) ON C.Id = H.Country_Id
+	WHERE H.Country_Id = @Country_id
+		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate >= @FromDate)))
+		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate <= @ToDate)))
+		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))
+		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))
+		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))
+		  AND ((@PenaltyType IS NOT NULL) AND (H.PenaltyType_id in (SELECT Value FROM fn_Split(@PenaltyType,','))))
+		  AND ((@SellerName IS NOT NULL) AND (H.Seller_id in (SELECT Value FROM fn_Split(@SellerName,','))))
+		  AND ((@HPApprovalStatus IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@HPApprovalStatus,','))))
+		  AND ((@ProductType IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@ProductType,','))))
+		  AND (
+				(CurrUser.UserGroup_Id = 1) OR
+				(CurrUser.UserGroup_Id = 2) OR
+				(CurrUser.UserGroup_Id = 3) OR
+				(CurrUser.UserGroup_Id = 4 AND H.VisibleForHP = 1)
+			  )
+		  AND D.ApprovalStatus_id = 2
+
+	RETURN
+END
+GO
+
+CREATE   FUNCTION [dbo].[fn_GetNotificationForExport](
+	@inUser_id			nvarchar(32),
+	@inFromDate			datetime,
+	@inPolicy			nvarchar(4000),
+	@inSellerType		nvarchar(4000),
+	@inSellerSubType	nvarchar(4000),
+	@inPenaltyType		nvarchar(4000),
+	@inSellerName		nvarchar(4000),
+	@inHPApprovalStatus	nvarchar(4000),
+	@inProductType		nvarchar(4000),
+	@inCountry_id		int
+)
+RETURNS @Result TABLE(
+	Country nvarchar(50),
+	Policy nvarchar(50),
+	Location_id nvarchar(20),
+	Seller_Name nvarchar(300),
+	Seller_DBA nvarchar(100),
+	Product_Type nvarchar(20),
+	Penalty nvarchar(50) NULL,
+	Penalty_Impact nvarchar(50)
+)
+AS
+BEGIN
+	DECLARE @User_id			nvarchar(32)	= @inUser_id
+	DECLARE @FromDate			datetime		= @inFromDate
+	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))
+	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')
+	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')
+	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')
+	DECLARE @SellerName			nvarchar(4000)	= NULLIF(@inSellerName,'')
+	DECLARE @HPApprovalStatus	nvarchar(4000)	= NULLIF(@inHPApprovalStatus,'')
+	DECLARE @SellerSubType		nvarchar(4000)	= NULLIF(@inSellerSubType,'')
+	DECLARE @ProductType		nvarchar(4000)	= NULLIF(@inProductType,'')
+	DECLARE @Country_id			int				= @inCountry_id
+
+	INSERT @Result(Country,Policy,Location_id,Seller_Name,Seller_DBA,Product_Type,Penalty,Penalty_Impact)
+	SELECT DISTINCT
+		C.Name,
+		N_Policy.Options,
+		H.Location_id,
+		S.Name,--H.Seller_Name,
+		COALESCE(SDBA.DBA,''),--H.Seller_DBA,
+		N_ProductType.Description,--H.Product_Type,
+		N_Penalty.Options AS Penalty,--H.Penalty,
+		COALESCE(CASE
+			WHEN H.Penalty_id in (1,15) THEN CAST(CAST(COALESCE(fn_GetNotificationTotal.AdjustedPenalty,0) AS Decimal(28,10)) AS nvarchar(50))
+			ELSE H.Penalty_Impact
+		END,'na')
+	FROM D_Notification H WITH(NOLOCK)
+	INNER JOIN D_NotificationDetail D WITH(NOLOCK) ON D.Master_Id = H.Id
+	LEFT JOIN N_Policy WITH(NOLOCK) ON N_Policy.Id = H.Policy_id
+	LEFT JOIN N_ApprovalStatus WITH(NOLOCK) ON N_ApprovalStatus.Id = H.ApprovalStatus_id
+	LEFT JOIN N_SellerSubType WITH(NOLOCK) ON N_SellerSubType.Id = H.SellerSubType_id
+	LEFT JOIN N_SellerType WITH(NOLOCK) ON N_SellerType.Id = N_SellerSubType.SellerType_id
+	--LEFT JOIN N_PenaltyType WITH(NOLOCK) ON N_PenaltyType.Id = H.PenaltyType_id
+	LEFT JOIN N_Users ON N_Users.Id = H.C_User_ID
+	OUTER APPLY fn_GetNotificationTotal(@User_id,H.Id)
+	LEFT JOIN N_Users CurrUser ON CurrUser.Id = @User_id
+	LEFT JOIN N_Seller S WITH(NOLOCK) ON S.Id = H.Seller_id
+	LEFT JOIN N_SellerDBA SDBA WITH(NOLOCK) ON SDBA.Id = H.SellerDBA_id
+	LEFT JOIN N_ProductType WITH(NOLOCK) ON N_ProductType.Id = H.ProductType_id
+	LEFT JOIN N_Penalty WITH(NOLOCK) ON N_Penalty.Id = H.Penalty_id
+	LEFT JOIN N_Country C WITH(NOLOCK) ON C.Id = H.Country_Id
+	WHERE H.Country_Id = @Country_id
+		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate >= @FromDate)))
+		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate <= @ToDate)))
+		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))
+		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))
+		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))
+		  AND ((@PenaltyType IS NOT NULL) AND (H.PenaltyType_id in (SELECT Value FROM fn_Split(@PenaltyType,','))))
+		  AND ((@SellerName IS NOT NULL) AND (H.Seller_id in (SELECT Value FROM fn_Split(@SellerName,','))))
+		  AND ((@HPApprovalStatus IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@HPApprovalStatus,','))))
+		  AND ((@ProductType IS NOT NULL) AND (H.ProductType_id in (SELECT Value FROM fn_Split(@ProductType,','))))
+		  AND (
+				(CurrUser.UserGroup_Id = 1) OR
+				(CurrUser.UserGroup_Id = 2) OR
+				(CurrUser.UserGroup_Id = 3) OR
+				(CurrUser.UserGroup_Id = 4 AND H.VisibleForHP = 1)
+			  )
+
+	RETURN
+END
+GO
+
+CREATE   FUNCTION [dbo].[fn_GetNotificationList](
+	@inUser_id			nvarchar(32),
+	@inFromDate			datetime,
+	@inPolicy			nvarchar(4000),
+	@inSellerType		nvarchar(4000),
+	@inSellerSubType	nvarchar(4000),
+	@inPenaltyType		nvarchar(4000),
+	@inSellerName		nvarchar(4000),
+	@inHPApprovalStatus	nvarchar(4000),
+	@inProductType		nvarchar(4000),
+	@inCountry_id		int
+)
+RETURNS @Result TABLE(
+	Id nvarchar(32) NULL,
+	Policy					nvarchar(50) NULL,
+	Location_id				nvarchar(20) NULL,
+	Seller_Name				nvarchar(300) NULL,
+	Seller_DBA				nvarchar(100) NULL,
+	Product_Type			nvarchar(50) NULL,
+	Penalty					nvarchar(50) NULL,
+	Penalty_Impact			decimal(38,20) NULL,
+	ApprovalStatus_id		int,
+	Notes					nvarchar(500) NULL,
+	SellerType				nvarchar(50),
+	PenaltyType				nvarchar(50),
+	ChangeInfo				nvarchar(MAX),
+	ApprovalStatusForOrder	int,
+	SellerType_id			int,
+	MPASeller				nvarchar(50),
+	MarketplaceViolations	nvarchar(50),
+	NotificationType		int,
+	Penalty_Id				int,
+	Qualification_Status	nvarchar(50),
+	FinStatusForOrder		int
+)
+AS
+BEGIN
+	DECLARE @User_id			nvarchar(32)	= @inUser_id
+	DECLARE @FromDate			datetime		= @inFromDate
+	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))
+	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')
+	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')
+	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')
+	DECLARE @SellerName			nvarchar(4000)	= NULLIF(@inSellerName,'')
+	DECLARE @HPApprovalStatus	nvarchar(4000)	= NULLIF(@inHPApprovalStatus,'')
+	DECLARE @SellerSubType		nvarchar(4000)	= NULLIF(@inSellerSubType,'')
+	DECLARE @ProductType		nvarchar(4000)	= NULLIF(@inProductType,'')
+	DECLARE @Country_id			int				= @inCountry_id
+
+
+	INSERT @Result(Id,Policy,Location_id,Seller_Name,Seller_DBA,Product_Type,Penalty,Penalty_Impact,
+				ApprovalStatus_id,Notes,SellerType,PenaltyType,ChangeInfo,ApprovalStatusForOrder,
+				SellerType_id,MPASeller,MarketplaceViolations,NotificationType,Penalty_Id,
+				Qualification_Status,FinStatusForOrder)
+	SELECT DISTINCT
+		H.Id,
+		N_Policy.Options,
+		H.Location_id,
+		S.Name,--H.Seller_Name,
+		COALESCE(SDBA.DBA,''),--H.Seller_DBA,
+		N_ProductType.Description,--H.Product_Type,
+		N_Penalty.Options AS Penalty,--H.Penalty,
+		--CASE WHEN H.Penalty_id in (1,15) THEN fn_GetNotificationTotal.AdjustedPenalty ELSE H.Penalty_Impact END,--H.ProductSuspensionImpact, -- Original
+		CASE
+			WHEN H.Penalty_id = 1 THEN fn_GetNotificationTotal.AdjustedPenalty
+			WHEN H.Penalty_id = 15 THEN CASE WHEN H.SuppliesAlternativePercent IS NULL THEN fn_GetNotificationTotal.OriginalPenalty ELSE fn_GetNotificationTotal.AdjustedPenalty END
+			ELSE H.Penalty_Impact
+		END,--H.ProductSuspensionImpact,
+		H.ApprovalStatus_id,
+		H.Notes,
+		N_SellerType.Options,
+		N_PenaltyType.Options,
+		CASE WHEN CurrUser.UserGroup_id = 4 THEN '' ELSE '<b>Notification Id:</b> ' + CAST(H.Notification_id AS nvarchar(32)) + '</br>' END + '<b>User:</b> ' + COALESCE(N_Users.FirstName + ' ' + N_Users.LastName, H.C_User_ID, 'System') + ' </br> ' + '<b>Modified date:</b> ' + dbo.fn_GetDateTimeText(H.C_DateTime),
+		CASE WHEN H.ApprovalStatus_id = 2 THEN 1 ELSE H.ApprovalStatus_id END ApprovalStatusForOrder,
+		N_SellerType.Id,
+		CASE H.MPASeller WHEN 1 THEN 'Yes' WHEN 0 THEN 'No' ELSE '' END,
+		CASE H.MarketplaceViolations WHEN 1 THEN 'Yes' WHEN 0 THEN 'No' ELSE '' END,
+		CASE
+			WHEN N_Penalty.id = 15 AND H.Country_Id = 2 THEN 2
+			WHEN H.Penalty_id = 1 AND H.ProductCategory_id <> 3 THEN 2
+			WHEN H.Penalty_id = 1 AND H.ProductCategory_id = 3 THEN 2
+			ELSE 3
+		END,
+		H.Penalty_id,
+		N_SellerQualificationStatus.[Description] AS Qualification_Status, -- HH 04/22/24
+		CASE
+			WHEN N_Penalty.id = 15 THEN 1 -- Financial
+			WHEN N_Penalty.id = 1 THEN 2 -- DGF
+			ELSE 3
+		END AS FinStatusForOrder-- HH 04/22/24
+	FROM D_Notification H WITH(NOLOCK)
+	--INNER JOIN D_NotificationDetail D WITH(NOLOCK) ON D.Master_Id = H.Id
+	LEFT JOIN N_Policy WITH(NOLOCK) ON N_Policy.Id = H.Policy_id
+	LEFT JOIN N_ApprovalStatus WITH(NOLOCK) ON N_ApprovalStatus.Id = H.ApprovalStatus_id
+	LEFT JOIN N_SellerSubType WITH(NOLOCK) ON N_SellerSubType.Id = H.SellerSubType_id
+	LEFT JOIN N_SellerType WITH(NOLOCK) ON N_SellerType.Id = N_SellerSubType.SellerType_id
+	LEFT JOIN N_PenaltyType WITH(NOLOCK) ON N_PenaltyType.Id = H.PenaltyType_id
+	LEFT JOIN N_Users ON N_Users.Id = H.C_User_ID
+	LEFT JOIN N_Users CurrUser ON CurrUser.Id = @User_id
+	OUTER APPLY fn_GetNotificationTotal(@User_id,H.Id)
+	LEFT JOIN N_Seller S WITH(NOLOCK) ON S.Id = H.Seller_id
+	LEFT JOIN N_SellerDBA SDBA WITH(NOLOCK) ON SDBA.Id = H.SellerDBA_id
+	LEFT JOIN N_ProductType WITH(NOLOCK) ON N_ProductType.Id = H.ProductType_id
+	LEFT JOIN N_Penalty WITH(NOLOCK) ON N_Penalty.Id = H.Penalty_id
+	LEFT JOIN N_SellerQualificationStatus WITH(NOLOCK) ON N_SellerQualificationStatus.Id = H.SellerQualificationStatus_id -- HH 04/22/24
+	WHERE H.Country_Id = @Country_id
+		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate >= @FromDate)))
+		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate <= @ToDate)))
+		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))
+		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))
+		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))
+		  AND ((@PenaltyType IS NOT NULL) AND (H.PenaltyType_id in (SELECT Value FROM fn_Split(@PenaltyType,','))))
+		  AND ((@SellerName IS NOT NULL) AND (H.Seller_id in (SELECT Value FROM fn_Split(@SellerName,','))))
+		  AND ((@HPApprovalStatus IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@HPApprovalStatus,','))))
+		  AND ((@ProductType IS NOT NULL) AND (H.ProductType_id in (SELECT Value FROM fn_Split(@ProductType,','))))
+		  AND (
+				(CurrUser.UserGroup_Id = 1) OR
+				(CurrUser.UserGroup_Id = 2) OR
+				(CurrUser.UserGroup_Id = 3) OR
+				(CurrUser.UserGroup_Id = 4 AND H.VisibleForHP = 1)
+			  )
+
+	RETURN
+END
+GO
+
+CREATE FUNCTION [dbo].[fn_GetNotificationTotal](
+	@inUser_id nvarchar(32),
+	@inNotification_id int
+)
+RETURNS @Result TABLE(
+	OriginalPenalty decimal(38,20),
+	AdjustedPenalty decimal(38,20)
+)
+AS
+BEGIN
+	DECLARE @User_id nvarchar(32) = @inUser_id
+	DECLARE @Notification_id int  = @inNotification_id
+
+	IF(SELECT COUNT(*) FROM D_Notification H WITH(NOLOCK)
+		LEFT JOIN N_Penalty  WITH(NOLOCK) ON N_Penalty.Id = H.Penalty_id
+		WHERE H.Id = @Notification_id AND
+			(Penalty_id = 1 --AND ProductCategory_id = 3
+			OR (N_Penalty.id = 15 AND H.Country_Id = 2))) > 0
+		INSERT @Result
+		SELECT
+			CAST(Penalty_Impact AS decimal(38,20)),
+			CASE WHEN Penalty_Id = 15 AND Country_Id = 2 THEN (BasePenalty * (COALESCE(SuppliesAlternativePercent/100,0))) ELSE (CAST(Penalty_Impact AS decimal(38,20))/0.02) * (COALESCE(SuppliesAlternativePercent/100,0.02)) END
+		FROM D_Notification WITH(NOLOCK)
+		WHERE Id = @Notification_id
+	ELSE IF (SELECT COUNT(*) FROM D_Notification WITH(NOLOCK) -- Until we get the list with the DGF Violation_Ids Penalty amounts from Conner (We should remove the ELSE IF logic after getting it and updating D_NotificationDetail)
+			 WHERE (Id = @Notification_id AND Penalty_id = 1 AND GenerationDate < '2020-08-28') OR (Id = @Notification_id AND Penalty_id IN (1, 15) AND Notes LIKE '%Ad hoc%') OR @Notification_id = 13727) > 0 -- Exception for Ad Hoc notifications
+		INSERT @Result
+		SELECT
+			CASE WHEN Notification_ID = 22330 THEN 164009.92 ELSE CAST(Penalty_Impact AS decimal(38,20)) END,	-- Exception for Ad Hoc notifications
+			CAST(Penalty_Impact AS decimal(38,20))
+		FROM D_Notification WITH(NOLOCK)
+		WHERE Id = @Notification_id
+	ELSE
+		INSERT @Result
+		SELECT
+			SUM(Three_Percent_of_Total),
+			SUM(CASE WHEN D_NotificationDetail.ApprovalStatus_id > 2 OR D_Notification.ApprovalStatus_id = 4 THEN 0 ELSE COALESCE(NULLIF(Alternative_Penalty,0),Three_Percent_of_Total,0) END)
+		FROM D_NotificationDetail WITH(NOLOCK)
+		INNER JOIN D_Notification WITH(NOLOCK)
+			ON D_NotificationDetail.Master_Id = D_Notification.Id
+		WHERE Master_Id = @Notification_id
+
+	RETURN
+END
+GO
+
+CREATE   FUNCTION [dbo].[fn_GetSellerList](
+	@inUser_id				nvarchar(32),
+	@inFromDate				datetime,
+	@inPolicy				nvarchar(4000),
+	@inSellerType			nvarchar(4000),
+	@inSellerSubType		nvarchar(4000),
+	@inPenaltyType			nvarchar(4000),
+	@inSellerName			nvarchar(4000),
+	@inHPApprovalStatus		nvarchar(4000),
+	@inProductType			nvarchar(4000),
+	@inAllSellerSelected	int,
+	@inCountry_id			int
+)
+RETURNS @Result TABLE(
+	Id			int,
+	Options		nvarchar(300) NULL,
+	IsSelected	int
+)
+AS
+BEGIN
+	DECLARE @User_id			nvarchar(32)	= @inUser_id
+	DECLARE @FromDate			datetime		= @inFromDate
+	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))
+	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')
+	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')
+	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')
+	DECLARE @SellerName			nvarchar(4000)	= NULLIF(@inSellerName,'')
+	DECLARE @HPApprovalStatus	nvarchar(4000)	= NULLIF(@inHPApprovalStatus,'')
+	DECLARE @SellerSubType		nvarchar(4000)	= NULLIF(@inSellerSubType,'')
+	DECLARE @ProductType		nvarchar(4000)	= NULLIF(@inProductType,'')
+	DECLARE @AllSellerSelected	int				= COALESCE(@inAllSellerSelected,1)
+	DECLARE @Country_id			int				= @inCountry_id
+
+	INSERT @Result(Id,Options,IsSelected)
+	SELECT DISTINCT
+		S.Id,
+		S.Name,
+		CASE
+			WHEN @AllSellerSelected = 1 THEN 1
+			WHEN S.id in (SELECT Value FROM fn_Split(@SellerName,',')) THEN 1
+			ELSE 0
+		END
+	FROM D_Notification H WITH(NOLOCK)
+	--INNER JOIN D_NotificationDetail D WITH(NOLOCK) ON D.Master_Id = H.Id
+	LEFT JOIN N_SellerSubType WITH(NOLOCK) ON N_SellerSubType.Id = H.SellerSubType_id
+	LEFT JOIN N_SellerType WITH(NOLOCK) ON N_SellerType.Id = N_SellerSubType.SellerType_id
+	LEFT JOIN N_Users CurrUser ON CurrUser.Id = @User_id
+	LEFT JOIN N_Seller S WITH(NOLOCK) ON S.Id = H.Seller_id
+	WHERE H.Country_Id = @Country_id
+		  AND H.Seller_id IS NOT NULL
+		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate >= @FromDate)))
+		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate <= @ToDate)))
+		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))
+		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))
+		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))
+		  AND ((@PenaltyType IS NOT NULL) AND (H.PenaltyType_id in (SELECT Value FROM fn_Split(@PenaltyType,','))))
+		  AND ((@HPApprovalStatus IS NOT NULL) AND (H.ApprovalStatus_id in (SELECT Value FROM fn_Split(@HPApprovalStatus,','))))
+		  AND ((@ProductType IS NOT NULL) AND (H.ProductType_id in (SELECT Value FROM fn_Split(@ProductType,','))))
+		  AND (
+				(CurrUser.UserGroup_Id = 1) OR
+				(CurrUser.UserGroup_Id = 2) OR
+				(CurrUser.UserGroup_Id = 3) OR
+				(CurrUser.UserGroup_Id = 4 AND H.VisibleForHP = 1)
+			  )
+
+	RETURN
+END
+GO
