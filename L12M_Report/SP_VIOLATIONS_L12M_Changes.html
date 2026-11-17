@@ -119,7 +119,7 @@ body.wrap .tx { white-space: pre-wrap; overflow-wrap: anywhere; }
 <body>
 <div class="wrapper">
 <header class="top">
-	<div class="eyebrow">HP_MAP_Prod · L12M report · approved version, not yet compiled or run on SQL Server</div>
+	<div class="eyebrow">HP_MAP_Prod · L12M report · approved version, syntax checked, not yet run on SQL Server</div>
 	<h1>_report.SP_VIOLATIONS_L12M: two procedures made into one</h1>
 	<p>Before: <code>_report.SP_VIOLATIONS_L12M</code> called <code>_report.SP_BUILD_VIOLATIONS_L12M_STAGE</code>. After: one procedure, written in the style of <code>_old.SP_VIOLATIONS_L12M</code>. The report rules are the same. One report value is fixed: the account name Target Corporation. This page lists every change and shows the code before and after, side by side.</p>
 	<div class="stats">
@@ -155,10 +155,11 @@ body.wrap .tx { white-space: pre-wrap; overflow-wrap: anywhere; }
 	<ul class="plain">
 		<li><b>Done.</b> A small script compared the original code and the new code word by word, block by block. The script ignores only style: spaces, line breaks, <code>;</code>, <code>AS</code>, the <code>N</code> prefix, square brackets, the word <code>INNER</code>, <code>INSERT</code> / <code>INSERT INTO</code> and the <code>HP_MAP_Prod.</code> prefix. Result: the only differences are the changes in the list above. They are coloured in the code below.</li>
 		<li><b>Done.</b> Brackets, <code>CASE ... END</code> and <code>BEGIN ... END</code> pairs are counted and they match. Every statement starts after a complete statement.</li>
+		<li><b>Done.</b> The new SP and the updated <code>DB_Objects.txt</code> were parsed with Microsoft's T-SQL parser (ScriptDom, SQL Server 2022 grammar). Result: 0 syntax errors. The parser checks only the syntax. It does not check that the tables, columns and functions exist.</li>
 	</ul>
 	<div class="callout" style="margin-top:12px">
-		<p><b>Not done: the new SP was not compiled and not run on SQL Server.</b> This session has no SQL Server. I tried to start a local test server and then a T-SQL parser, and the permission settings of the session blocked both. So the speed and the result on real data are not measured.</p>
-		<p>Please compile it in a test database first. To check only the syntax in SSMS, run <code>SET PARSEONLY ON</code> before the script and <code>SET PARSEONLY OFF</code> after it. Then compare the rows of one run with the current SP before you use it in production.</p>
+		<p><b>Not done: the new SP was not compiled and not run on a real SQL Server.</b> This session has no SQL Server with your databases. So object names, the speed and the result on real data are not checked.</p>
+		<p>Please compile it in a test database first. Then compare the rows of one run with the current SP before you use it in production.</p>
 	</div>
 </section>
 <section id="diff" style="padding-bottom:0">
