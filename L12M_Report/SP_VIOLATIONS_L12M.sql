@@ -54,6 +54,7 @@ GO
 -- 09/04/26 PB Added historical Warning monitoring and Consequence penalty periods plus Flag_Warning_Or_Monitoring.
 -- 09/17/26 PB Restored top-seller membership and weekly seller ranking without restoring projected FIN or RunningTotal.
 -- 11/17/26 Plamen Belezhkov: Merged _report.SP_BUILD_VIOLATIONS_L12M_STAGE into this SP. Removed the app locks, the extra checks and the progress messages. No change to the report rules.
+-- 11/17/26 Plamen Belezhkov: Removed columns that were calculated but not used. Fixed the account name Target Corporation.
 ALTER PROCEDURE [_report].[SP_VIOLATIONS_L12M]
 @P_Export_Start_Date DATE = NULL,
 @P_Generate_Full_Refresh BIT = 0,
@@ -296,7 +297,7 @@ OPTION (MAXDOP 2, RECOMPILE)
 CREATE INDEX IX_MAP_L12M_Product ON #MAP_L12M_US_Product (SKU, Valid_From, Valid_To);
 
 -- Sellers that were valid at some time in the report period.
-SELECT sel.Master_New_Location_Id, sel.Print_Qualification, sel.Qualified_Business_Personal_Systems, sel.Qualified_Consumer_Personal_Systems, sel.Supplies_Qualification, sel.Valid_From, sel.Valid_To
+SELECT sel.Master_New_Location_Id, sel.Valid_From, sel.Valid_To
 INTO #MAP_L12M_US_Seller
 FROM _final.Dim_Seller sel
 WHERE sel.Valid_From < DATEADD(DAY, 1, @ThroughDate)
@@ -331,18 +332,11 @@ FROM (
 		,v.Fact_ID [Fact ID]
 		,v.Week_Start_Date [Week]
 		,v.Collected_Date [Date]
-		,dp.Product_Category_Reporting [Product Category]
 		,CASE
 			WHEN dp.CSKU_Flag = 'C-SKU' THEN 'C-SKU'
 			WHEN dp.Government_SKU_Flag = 'Government SKU' AND dp.Product_Category_Reporting = 'Supplies' THEN 'G-SKU'
 			ELSE dp.Product_Type_Indirect_MAP
 		END [Product Subcategory]
-		,COALESCE(v.Product_Type_Enforcement,
-			CASE
-				WHEN dp.Product_Type_Indirect_MAP IN ('Ink', 'Toner') THEN 'Ink & Toner'
-				WHEN dp.Product_Type_Indirect_MAP LIKE 'Large Format%' THEN 'Large Format'
-				ELSE dp.Product_Type_Indirect_MAP
-			END) [Product Subcategory Enforcement]
 		,v.SKU
 		,UPPER(NULLIF(nm.ASIN, 'N/A')) ASIN
 		,dp.Product_Description -- ViolationsMAP does not have Product_Description. Get it from the same Dim_Product row as the category fields.
@@ -387,15 +381,6 @@ FROM (
 			WHEN v.Market = 'Newegg' THEN 5
 			ELSE 6
 		END Market_ID
-		,CASE
-			WHEN qpp.Partner_Count > 0 THEN dbo.FN_GET_SELLER_STATUS(dp.Product_Category_Reporting, sel.Supplies_Qualification, sel.Print_Qualification, sel.Qualified_Business_Personal_Systems, sel.Qualified_Consumer_Personal_Systems)
-			ELSE 'Unauthorized'
-		END Seller_Status
-		,CASE
-			WHEN qpp.Partner_Status = 'Dropped' THEN qpp.Drop_Date
-			WHEN qpp.Action_Required = 'PA Termination' THEN qpp.Expiration_Date
-			ELSE NULL
-		END [Termination Date]
 		,v.Notification_ID
 		,linked_notification.DGF_Penalty
 		,CASE
@@ -467,26 +452,19 @@ BEGIN
 	INNER LOOP JOIN _final.Seller_Pricing_NewMo nm WITH(INDEX([Idx_final_Seller_Pricing_NewMo_Id])) ON nm.ID = keys_needed.Listing_ID
 	OPTION (MAXDOP 2, RECOMPILE)
 
-	INSERT INTO #MAP_L12M_US_Base (Violation_ID, [Fact ID], [Week], [Date], [Product Category], [Product Subcategory], [Product Subcategory Enforcement], SKU, ASIN, Product_Description, Account,
+	INSERT INTO #MAP_L12M_US_Base (Violation_ID, [Fact ID], [Week], [Date], [Product Subcategory], SKU, ASIN, Product_Description, Account,
 		[Seller Name], [Location ID], Master_SID, [Seller Penalty Type], [Reporting Group], Market, [Log-in Type], [Price Location], MAP, [Advertised Price], [Eligible IR], [Lowest Possible Price],
-		Screenshot_URL, Validation_Status_Raw, Notes, Tier_Pass_Through, Flag_Bundle, Login_Type_ID, Flag_StrikeThrough, Violation_Type, Market_ID, Seller_Status, [Termination Date],
+		Screenshot_URL, Validation_Status_Raw, Notes, Tier_Pass_Through, Flag_Bundle, Login_Type_ID, Flag_StrikeThrough, Violation_Type, Market_ID,
 		Notification_ID, DGF_Penalty, Flag_Triggered_Warning)
 	SELECT v.Violation_ID
 		,v.Fact_ID [Fact ID]
 		,v.Week_Start_Date [Week]
 		,v.Collected_Date [Date]
-		,dp.Product_Category_Reporting [Product Category]
 		,CASE
 			WHEN dp.CSKU_Flag = 'C-SKU' THEN 'C-SKU'
 			WHEN dp.Government_SKU_Flag = 'Government SKU' AND dp.Product_Category_Reporting = 'Supplies' THEN 'G-SKU'
 			ELSE dp.Product_Type_Indirect_MAP
 		END [Product Subcategory]
-		,COALESCE(v.Product_Type_Enforcement,
-			CASE
-				WHEN dp.Product_Type_Indirect_MAP IN ('Ink', 'Toner') THEN 'Ink & Toner'
-				WHEN dp.Product_Type_Indirect_MAP LIKE 'Large Format%' THEN 'Large Format'
-				ELSE dp.Product_Type_Indirect_MAP
-			END) [Product Subcategory Enforcement]
 		,v.SKU
 		,UPPER(NULLIF(nm.ASIN, 'N/A')) ASIN
 		,dp.Product_Description -- ViolationsMAP does not have Product_Description. Get it from the same Dim_Product row as the category fields.
@@ -531,15 +509,6 @@ BEGIN
 			WHEN v.Market = 'Newegg' THEN 5
 			ELSE 6
 		END Market_ID
-		,CASE
-			WHEN qpp.Partner_Count > 0 THEN dbo.FN_GET_SELLER_STATUS(dp.Product_Category_Reporting, sel.Supplies_Qualification, sel.Print_Qualification, sel.Qualified_Business_Personal_Systems, sel.Qualified_Consumer_Personal_Systems)
-			ELSE 'Unauthorized'
-		END Seller_Status
-		,CASE
-			WHEN qpp.Partner_Status = 'Dropped' THEN qpp.Drop_Date
-			WHEN qpp.Action_Required = 'PA Termination' THEN qpp.Expiration_Date
-			ELSE NULL
-		END [Termination Date]
 		,v.Notification_ID
 		,linked_notification.DGF_Penalty
 		,CASE
@@ -594,10 +563,10 @@ CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Signals ON #MAP_L12M_US_Signals (MAP_R
 
 -- Keep one violation per seller, day, SKU and log-in type. Set the daily and the weekly validation status.
 DROP TABLE IF EXISTS #ViolationRows
-SELECT base.Violation_ID, base.[Fact ID], base.[Week], base.[Date], base.[Product Category], base.[Product Subcategory], base.[Product Subcategory Enforcement], base.SKU, base.ASIN,
+SELECT base.Violation_ID, base.[Fact ID], base.[Week], base.[Date], base.[Product Subcategory], base.SKU, base.ASIN,
 	base.Product_Description, base.Account, base.[Seller Name], base.[Location ID], base.Master_SID, base.[Seller Penalty Type], base.[Reporting Group], base.Market, base.[Log-in Type],
 	base.[Price Location], base.MAP, base.[Advertised Price], base.[Eligible IR], base.[Lowest Possible Price], base.Screenshot_URL, base.Validation_Status_Raw, base.Notes,
-	base.Tier_Pass_Through, base.Flag_Bundle, base.Login_Type_ID, base.Flag_StrikeThrough, base.Violation_Type, base.Market_ID, base.Seller_Status, base.[Termination Date],
+	base.Tier_Pass_Through, base.Flag_Bundle, base.Login_Type_ID, base.Flag_StrikeThrough, base.Violation_Type, base.Market_ID,
 	base.Notification_ID, base.DGF_Penalty, base.Flag_Triggered_Warning
 	,signal.Has_Accepted
 	,signal.Has_Rejected
@@ -906,7 +875,7 @@ SELECT CAST('US' AS NVARCHAR(10)) Country
 	,CONVERT(NVARCHAR(300), LEFT(
 		CASE
 			WHEN scaffold.[Location ID] = '10267108' THEN 'Office Products Center Inc'
-			WHEN scaffold.Account = 'Target' THEN 'Target Corporatio'
+			WHEN scaffold.Account = 'Target' THEN 'Target Corporation'
 			ELSE scaffold.Account
 		END, 300)) Account
 	,CONVERT(NVARCHAR(300), LEFT(violation.[Seller Name], 300)) [Seller Name]
@@ -1377,7 +1346,7 @@ OPTION (MAXDOP 2, RECOMPILE)
 CREATE INDEX IX_MAP_L12M_Product ON #MAP_L12M_CA_Product (SKU, Valid_From, Valid_To);
 
 -- Sellers that were valid at some time in the report period.
-SELECT sel.Master_New_Location_Id, sel.Print_Qualification, sel.Qualified_Business_Personal_Systems, sel.Qualified_Consumer_Personal_Systems, sel.Supplies_Qualification, sel.Valid_From, sel.Valid_To
+SELECT sel.Master_New_Location_Id, sel.Valid_From, sel.Valid_To
 INTO #MAP_L12M_CA_Seller
 FROM HP_MAP_Canada._final.Dim_Seller sel
 WHERE sel.Valid_From < DATEADD(DAY, 1, @ThroughDate)
@@ -1412,18 +1381,11 @@ FROM (
 		,v.Fact_ID [Fact ID]
 		,v.Week_Start_Date [Week]
 		,v.Collected_Date [Date]
-		,dp.Product_Category_Reporting [Product Category]
 		,CASE
 			WHEN dp.CSKU_Flag = 'C-SKU' THEN 'C-SKU'
 			WHEN dp.Government_SKU_Flag = 'Government SKU' AND dp.Product_Category_Reporting = 'Supplies' THEN 'G-SKU'
 			ELSE dp.Product_Type_Indirect_MAP
 		END [Product Subcategory]
-		,COALESCE(v.Product_Type_Enforcement,
-			CASE
-				WHEN dp.Product_Type_Indirect_MAP IN ('Ink', 'Toner') THEN 'Ink & Toner'
-				WHEN dp.Product_Type_Indirect_MAP LIKE 'Large Format%' THEN 'Large Format'
-				ELSE dp.Product_Type_Indirect_MAP
-			END) [Product Subcategory Enforcement]
 		,v.SKU
 		,UPPER(NULLIF(nm.ASIN, 'N/A')) ASIN
 		,dp.Product_Description -- ViolationsMAP does not have Product_Description. Get it from the same Dim_Product row as the category fields.
@@ -1469,15 +1431,6 @@ FROM (
 			WHEN v.Market = 'Best Buy Canada' THEN 6
 			ELSE 7
 		END Market_ID
-		,CASE
-			WHEN qpp.Partner_Count > 0 THEN dbo.FN_GET_SELLER_STATUS(dp.Product_Category_Reporting, sel.Supplies_Qualification, sel.Print_Qualification, sel.Qualified_Business_Personal_Systems, sel.Qualified_Consumer_Personal_Systems)
-			ELSE 'Unauthorized'
-		END Seller_Status
-		,CASE
-			WHEN qpp.Partner_Status = 'Dropped' THEN qpp.Drop_Date
-			WHEN qpp.Action_Required = 'PA Termination' THEN qpp.Expiration_Date
-			ELSE NULL
-		END [Termination Date]
 		,v.Notification_ID
 		,linked_notification.DGF_Penalty
 		,CASE
@@ -1549,26 +1502,19 @@ BEGIN
 	INNER LOOP JOIN HP_MAP_Canada._final.Seller_Pricing_NewMo_Canada nm WITH(INDEX([NonClusteredIndex-20191217-072548])) ON nm.ID = keys_needed.Listing_ID
 	OPTION (MAXDOP 2, RECOMPILE)
 
-	INSERT INTO #MAP_L12M_CA_Base (Violation_ID, [Fact ID], [Week], [Date], [Product Category], [Product Subcategory], [Product Subcategory Enforcement], SKU, ASIN, Product_Description, Account,
+	INSERT INTO #MAP_L12M_CA_Base (Violation_ID, [Fact ID], [Week], [Date], [Product Subcategory], SKU, ASIN, Product_Description, Account,
 		[Seller Name], [Location ID], Master_SID, [Seller Penalty Type], [Reporting Group], Market, [Log-in Type], [Price Location], MAP, [Advertised Price], [Eligible IR], [Lowest Possible Price],
-		Screenshot_URL, Validation_Status_Raw, Notes, Tier_Pass_Through, Flag_Bundle, Login_Type_ID, Flag_StrikeThrough, Violation_Type, Market_ID, Seller_Status, [Termination Date],
+		Screenshot_URL, Validation_Status_Raw, Notes, Tier_Pass_Through, Flag_Bundle, Login_Type_ID, Flag_StrikeThrough, Violation_Type, Market_ID,
 		Notification_ID, DGF_Penalty, Flag_Triggered_Warning)
 	SELECT v.Violation_ID
 		,v.Fact_ID [Fact ID]
 		,v.Week_Start_Date [Week]
 		,v.Collected_Date [Date]
-		,dp.Product_Category_Reporting [Product Category]
 		,CASE
 			WHEN dp.CSKU_Flag = 'C-SKU' THEN 'C-SKU'
 			WHEN dp.Government_SKU_Flag = 'Government SKU' AND dp.Product_Category_Reporting = 'Supplies' THEN 'G-SKU'
 			ELSE dp.Product_Type_Indirect_MAP
 		END [Product Subcategory]
-		,COALESCE(v.Product_Type_Enforcement,
-			CASE
-				WHEN dp.Product_Type_Indirect_MAP IN ('Ink', 'Toner') THEN 'Ink & Toner'
-				WHEN dp.Product_Type_Indirect_MAP LIKE 'Large Format%' THEN 'Large Format'
-				ELSE dp.Product_Type_Indirect_MAP
-			END) [Product Subcategory Enforcement]
 		,v.SKU
 		,UPPER(NULLIF(nm.ASIN, 'N/A')) ASIN
 		,dp.Product_Description -- ViolationsMAP does not have Product_Description. Get it from the same Dim_Product row as the category fields.
@@ -1614,15 +1560,6 @@ BEGIN
 			WHEN v.Market = 'Best Buy Canada' THEN 6
 			ELSE 7
 		END Market_ID
-		,CASE
-			WHEN qpp.Partner_Count > 0 THEN dbo.FN_GET_SELLER_STATUS(dp.Product_Category_Reporting, sel.Supplies_Qualification, sel.Print_Qualification, sel.Qualified_Business_Personal_Systems, sel.Qualified_Consumer_Personal_Systems)
-			ELSE 'Unauthorized'
-		END Seller_Status
-		,CASE
-			WHEN qpp.Partner_Status = 'Dropped' THEN qpp.Drop_Date
-			WHEN qpp.Action_Required = 'PA Termination' THEN qpp.Expiration_Date
-			ELSE NULL
-		END [Termination Date]
 		,v.Notification_ID
 		,linked_notification.DGF_Penalty
 		,CASE
@@ -1677,10 +1614,10 @@ CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Signals ON #MAP_L12M_CA_Signals (MAP_R
 
 -- Keep one violation per seller, day, SKU and log-in type. Set the daily and the weekly validation status.
 DROP TABLE IF EXISTS #CA_ViolationRows
-SELECT base.Violation_ID, base.[Fact ID], base.[Week], base.[Date], base.[Product Category], base.[Product Subcategory], base.[Product Subcategory Enforcement], base.SKU, base.ASIN,
+SELECT base.Violation_ID, base.[Fact ID], base.[Week], base.[Date], base.[Product Subcategory], base.SKU, base.ASIN,
 	base.Product_Description, base.Account, base.[Seller Name], base.[Location ID], base.Master_SID, base.[Seller Penalty Type], base.[Reporting Group], base.Market, base.[Log-in Type],
 	base.[Price Location], base.MAP, base.[Advertised Price], base.[Eligible IR], base.[Lowest Possible Price], base.Screenshot_URL, base.Validation_Status_Raw, base.Notes,
-	base.Tier_Pass_Through, base.Flag_Bundle, base.Login_Type_ID, base.Flag_StrikeThrough, base.Violation_Type, base.Market_ID, base.Seller_Status, base.[Termination Date],
+	base.Tier_Pass_Through, base.Flag_Bundle, base.Login_Type_ID, base.Flag_StrikeThrough, base.Violation_Type, base.Market_ID,
 	base.Notification_ID, base.DGF_Penalty, base.Flag_Triggered_Warning
 	,signal.Has_Accepted
 	,signal.Has_Rejected
@@ -2255,6 +2192,11 @@ JOIN #CA_WeeklySellerRanks seller_rank
 	AND seller_rank.[Location ID] = output_base.[Location ID]
 
 -- Final output and export
+-- Stop if the US or Canada has no rows for the export dates. The old rows stay in the report table.
+IF NOT EXISTS (SELECT 1 FROM #FinalOutput WHERE [Date] BETWEEN @ExportStartDate AND @ThroughDate)
+	OR NOT EXISTS (SELECT 1 FROM #CA_FinalOutput WHERE [Date] BETWEEN @ExportStartDate AND @ThroughDate)
+	THROW 51000, 'L12M shadow output lacks a required country; previous output retained.', 1;
+
 -- The delete and the insert run in one transaction. If an error happens, XACT_ABORT rolls back both and the old rows stay in the table.
 BEGIN TRANSACTION;
 
@@ -2444,15 +2386,20 @@ WHERE final.[Date] BETWEEN @ExportStartDate AND @ThroughDate
 
 COMMIT TRANSACTION;
 
--- The email is sent after the commit, so a mail error cannot undo the report.
-IF dbo.CanSendDbMail() = 1
-BEGIN
-	EXEC msdb.dbo.sp_send_dbmail
-			@profile_name = 'QDN Support',
-			@recipients = 'pbelezhkov@dsmengines.com;edeneva@dsmengines.com;zfraile@dsmengines.com',
-			@body = 'The _report.Violations_L12M table has been refreshed.',
-			@subject = 'The Violations L12M export has been generated',
-			@body_format = 'HTML';
-END
+-- The report is already saved here. The email is only an extra, so a mail error must not fail the SP.
+BEGIN TRY
+	IF dbo.CanSendDbMail() = 1
+	BEGIN
+		EXEC msdb.dbo.sp_send_dbmail
+				@profile_name = 'QDN Support',
+				@recipients = 'pbelezhkov@dsmengines.com;edeneva@dsmengines.com;zfraile@dsmengines.com',
+				@body = 'The _report.Violations_L12M table has been refreshed.',
+				@subject = 'The Violations L12M export has been generated',
+				@body_format = 'HTML';
+	END
+END TRY
+BEGIN CATCH
+	PRINT 'The report is saved, but the email was not sent: ' + ERROR_MESSAGE()
+END CATCH
 END
 GO
