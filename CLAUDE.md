@@ -10,3 +10,4 @@ Apply these preferences to all Claude coding work.
 6. Before committing code, present the complete proposed result and clear diffs so the user can review exactly what will change. For database work, show the revised stored procedures and definitions of any proposed new objects. Wait for the user's review and approval before committing or applying database changes.
 7. In SQL, use COUNT instead of COUNT_BIG unless COUNT_BIG is absolutely necessary.
 8. Write natural code comments in simple English that is easy for a non-native English speaker to understand. Avoid complex words and sentences. Keep comments concise and generally short. For new change entries in a database object header above ALTER, list the author as Plamen Belezhkov. Preserve the authors of existing historical entries.
+9. Do not add ';' at the end of SQL statements unless necessary.
