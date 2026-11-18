@@ -76,11 +76,11 @@ DECLARE @ExportStartDate DATE = CASE
 		WHEN @P_Export_Start_Date IS NOT NULL THEN @P_Export_Start_Date
 		WHEN @P_Generate_Full_Refresh = 1 THEN @StartDate
 		ELSE (SELECT d.Week_Begin_Date_Alt FROM _final.Dim_Date d WHERE d.Full_Date = DATETRUNC(WEEK, DATEADD(WEEK, -2, @BusinessToday)))
-	END;
+	END
 
 -- Stop if the dates are not valid. This check makes sure we do not delete report rows that we cannot load again.
 IF @StartDate IS NULL OR @ExportStartDate IS NULL OR @ExportStartDate < @StartDate OR @ExportStartDate > @ThroughDate OR @ThroughDate >= @BusinessToday
-	THROW 51000, 'Invalid L12M calendar/export/through-date window.', 1;
+	THROW 51000, 'Invalid L12M calendar/export/through-date window.', 1
 
 DROP TABLE IF EXISTS #Product_Category
 CREATE TABLE #Product_Category (
@@ -103,7 +103,7 @@ VALUES
 	('PS', 'BPS Display', 'BPS Display', 'BPS Display'),
 	('PS', 'CPS Desktop', 'CPS Desktop', 'CPS Desktop'),
 	('PS', 'CPS Display', 'CPS Display', 'CPS Display'),
-	('PS', 'CPS Notebook', 'CPS Notebook', 'CPS Notebook');
+	('PS', 'CPS Notebook', 'CPS Notebook', 'CPS Notebook')
 
 DROP TABLE IF EXISTS #Weeks
 SELECT DISTINCT dt.Week_Begin_Date_Alt [Week]
@@ -113,7 +113,7 @@ FROM _final.Dim_Date dt  -- 9/10/20 LU adjusted to Dim_Date to include days even
 WHERE dt.Week_Begin_Date_Alt >= @StartDate
 	AND dt.Full_Date < DATEADD(DAY, 1, @ThroughDate)
 
-CREATE UNIQUE CLUSTERED INDEX IX_Weeks_Date ON #Weeks ([Date]);
+CREATE UNIQUE CLUSTERED INDEX IX_Weeks_Date ON #Weeks ([Date])
 
 DECLARE @MaxFileDateUPC_US DATE = (SELECT MAX([File Date]) FROM _analysis.MAP_Price_List_Tool_Export_NEW)
 
@@ -125,7 +125,7 @@ FROM _analysis.MAP_Price_List_Tool_Export_NEW
 WHERE [File Date] = @MaxFileDateUPC_US
 GROUP BY SKU
 
-CREATE UNIQUE CLUSTERED INDEX IX_UPC_US_SKU ON #UPC_US (SKU);
+CREATE UNIQUE CLUSTERED INDEX IX_UPC_US_SKU ON #UPC_US (SKU)
 
 DROP TABLE IF EXISTS #MinViolationDate
 SELECT New_Location_ID
@@ -135,7 +135,7 @@ FROM _final.ViolationsMAP
 WHERE Collected_Date >= '2023-11-01'
 GROUP BY New_Location_ID
 
-CREATE UNIQUE CLUSTERED INDEX IX_MinViolationDate_Location ON #MinViolationDate (New_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_MinViolationDate_Location ON #MinViolationDate (New_Location_ID)
 
 -- Fact_Listings is used only for the two listing date columns. It does not add violations.
 DROP TABLE IF EXISTS #Min_Max_Listing_Date
@@ -149,7 +149,7 @@ WHERE CAST(f.Collected_Date AS DATE) >= '2023-11-01'
 	AND s.Master_New_Location_Id <> 'N/A'
 GROUP BY s.Master_New_Location_Id
 
-CREATE UNIQUE CLUSTERED INDEX IX_MinMaxListingDate_Location ON #Min_Max_Listing_Date (Master_New_Location_Id);
+CREATE UNIQUE CLUSTERED INDEX IX_MinMaxListingDate_Location ON #Min_Max_Listing_Date (Master_New_Location_Id)
 
 DROP TABLE IF EXISTS #DateRequested
 SELECT Country [Ctry]
@@ -159,7 +159,7 @@ INTO #DateRequested
 FROM _analysis.PM_Monitoring_List
 GROUP BY Country, Master_New_Location_Id
 
-CREATE NONCLUSTERED INDEX IX_DateRequested_Country_Location ON #DateRequested (Ctry, Master_New_Location_Id);
+CREATE NONCLUSTERED INDEX IX_DateRequested_Country_Location ON #DateRequested (Ctry, Master_New_Location_Id)
 
 DROP TABLE IF EXISTS #NewSKU
 SELECT DISTINCT SKU
@@ -167,7 +167,7 @@ INTO #NewSKU
 FROM _ref.SKU_Enforcement_Exclusion
 WHERE Flag_Reporting = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_NewSKU_SKU ON #NewSKU (SKU);
+CREATE UNIQUE CLUSTERED INDEX IX_NewSKU_SKU ON #NewSKU (SKU)
 
 DROP TABLE IF EXISTS #Grace_Period
 SELECT DISTINCT CAST('US' AS NVARCHAR(10)) Country
@@ -177,7 +177,7 @@ SELECT DISTINCT CAST('US' AS NVARCHAR(10)) Country
 INTO #Grace_Period
 FROM _ref.Grace_Period_SKUs
 
-CREATE NONCLUSTERED INDEX IX_GracePeriod_SKU_Dates ON #Grace_Period (SKU, Valid_From, Valid_To);
+CREATE NONCLUSTERED INDEX IX_GracePeriod_SKU_Dates ON #Grace_Period (SKU, Valid_From, Valid_To)
 
 DROP TABLE IF EXISTS #Content
 SELECT Country
@@ -196,7 +196,7 @@ FROM (
 ) RankedContent
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_Content_Country_Location ON #Content (Country, HPI_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_Content_Country_Location ON #Content (Country, HPI_Location_ID)
 
 -- Active US partners. The list is built one time and used in two steps below.
 DROP TABLE IF EXISTS #ActiveQPP
@@ -214,7 +214,7 @@ WHERE p.Flag_Active = 1
 	AND p.Country IN ('US', 'USA')
 GROUP BY CONVERT(NVARCHAR(20), p.HPI_Location_ID)
 
-CREATE UNIQUE CLUSTERED INDEX IX_ActiveQPP_Location ON #ActiveQPP (HPI_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_ActiveQPP_Location ON #ActiveQPP (HPI_Location_ID)
 
 DROP TABLE IF EXISTS #PartnerLookup
 SELECT CONVERT(NVARCHAR(20), p.LocationId) LocationId
@@ -223,7 +223,7 @@ INTO #PartnerLookup
 FROM HP_QPP_Prod.dbo.N_Partners p
 GROUP BY CONVERT(NVARCHAR(20), p.LocationId)
 
-CREATE UNIQUE CLUSTERED INDEX IX_PartnerLookup_Location ON #PartnerLookup (LocationId);
+CREATE UNIQUE CLUSTERED INDEX IX_PartnerLookup_Location ON #PartnerLookup (LocationId)
 
 -- Notifications that are approved and are not marked as wrong or as an exception.
 -- This table is used for the DGF penalty, the warning flag and the latest letter status.
@@ -243,8 +243,8 @@ WHERE n.Notification_Approval_Status <> 0
 	AND ISNULL(n.Wrong_Notification_Flag, 0) = 0
 	AND ISNULL(n.Exception_Flag, 0) = 0
 
-CREATE CLUSTERED INDEX IX_ValidNotifications_Location_Product_Generation ON #ValidNotifications (New_Location_ID, Product_Type, Generation_Date DESC, Notification_ID DESC, ID DESC);
-CREATE NONCLUSTERED INDEX IX_ValidNotifications_Notification ON #ValidNotifications (Notification_ID, New_Location_ID, Product_Type) INCLUDE (Letter_Type, DGF_Penalty);
+CREATE CLUSTERED INDEX IX_ValidNotifications_Location_Product_Generation ON #ValidNotifications (New_Location_ID, Product_Type, Generation_Date DESC, Notification_ID DESC, ID DESC)
+CREATE NONCLUSTERED INDEX IX_ValidNotifications_Notification ON #ValidNotifications (Notification_ID, New_Location_ID, Product_Type) INCLUDE (Letter_Type, DGF_Penalty)
 
 DROP TABLE IF EXISTS #StoreFrontNames
 SELECT Country
@@ -263,7 +263,7 @@ FROM (
 ) ApprovedStorefronts
 GROUP BY Country, New_Location_ID
 
-CREATE UNIQUE CLUSTERED INDEX IX_StoreFrontNames_Country_Location ON #StoreFrontNames (Country, New_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_StoreFrontNames_Country_Location ON #StoreFrontNames (Country, New_Location_ID)
 
 -- Fiscal Week Calculation
 DROP TABLE IF EXISTS #Fiscal_Week
@@ -279,7 +279,7 @@ FROM (
 WHERE Fiscal_Week_Number < 53
 	AND Week_Begin_Date_Alt >= '2015-11-01'
 
-CREATE UNIQUE CLUSTERED INDEX IX_FiscalWeek_Week ON #Fiscal_Week (Week_Begin_Date_Alt);
+CREATE UNIQUE CLUSTERED INDEX IX_FiscalWeek_Week ON #Fiscal_Week (Week_Begin_Date_Alt)
 
 -- Daily_MAP_Violations_VI and the old #CTE_Adhoc logic are not used any more. ViolationsMAP is the only source of violations.
 --To Do: Remove Fact ID and pull screenshot URL above at time of Daily creation
@@ -294,7 +294,7 @@ WHERE dp.Valid_From < DATEADD(DAY, 1, @ThroughDate)
 	AND dp.In_MAP_Scope_Flag = 'In MAP Scope'
 OPTION (MAXDOP 2, RECOMPILE)
 
-CREATE INDEX IX_MAP_L12M_Product ON #MAP_L12M_US_Product (SKU, Valid_From, Valid_To);
+CREATE INDEX IX_MAP_L12M_Product ON #MAP_L12M_US_Product (SKU, Valid_From, Valid_To)
 
 -- Sellers that were valid at some time in the report period.
 SELECT sel.Master_New_Location_Id, sel.Valid_From, sel.Valid_To
@@ -304,7 +304,7 @@ WHERE sel.Valid_From < DATEADD(DAY, 1, @ThroughDate)
 	AND sel.Valid_To >= @StartDate
 OPTION (MAXDOP 2, RECOMPILE)
 
-CREATE INDEX IX_MAP_L12M_Seller ON #MAP_L12M_US_Seller (Master_New_Location_Id, Valid_From, Valid_To);
+CREATE INDEX IX_MAP_L12M_Seller ON #MAP_L12M_US_Seller (Master_New_Location_Id, Valid_From, Valid_To)
 
 -- Empty tables for the daily loop below. One holds the violations of one day, the other holds their listings.
 SELECT TOP (0) v.Collected_Date, v.Comments, v.Data_Source, v.Eligible_IR_Amount, v.Fact_ID, v.Flag_Bundle, v.HP_Reason_ID, v.Listing_ID, v.Login_Type_ID, v.Lowest_Possible_Price, v.MAP,
@@ -314,13 +314,13 @@ SELECT TOP (0) v.Collected_Date, v.Comments, v.Data_Source, v.Eligible_IR_Amount
 INTO #MAP_L12M_US_Batch
 FROM _final.ViolationsMAP v
 
-CREATE INDEX IX_MAP_L12M_Batch_SKU ON #MAP_L12M_US_Batch (SKU, Collected_Date);
+CREATE INDEX IX_MAP_L12M_Batch_SKU ON #MAP_L12M_US_Batch (SKU, Collected_Date)
 
 SELECT TOP (0) CONVERT(BIGINT, nm.ID) ID, nm.ASIN, nm.Listing_URL
 INTO #MAP_L12M_US_Listings
 FROM _final.Seller_Pricing_NewMo nm
 
-CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Listings ON #MAP_L12M_US_Listings (ID);
+CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Listings ON #MAP_L12M_US_Listings (ID)
 
 DECLARE @MAP_L12M_US_BatchStart DATE = @StartDate, @MAP_L12M_US_BatchEnd DATE = DATEADD(DAY, 1, @StartDate)
 
@@ -418,7 +418,7 @@ FROM (
 ) base
 WHERE 1 = 0
 
-CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Base_Token ON #MAP_L12M_US_Base (MAP_RowToken);
+CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Base_Token ON #MAP_L12M_US_Base (MAP_RowToken)
 
 -- Load the violations one day at a time. All joined rows are kept. No DISTINCT is used on the violations.
 WHILE @MAP_L12M_US_BatchStart <= @ThroughDate
@@ -559,7 +559,7 @@ INTO #MAP_L12M_US_Signals
 FROM #MAP_L12M_US_Base base
 OPTION (MAXDOP 2, RECOMPILE)
 
-CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Signals ON #MAP_L12M_US_Signals (MAP_RowToken);
+CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Signals ON #MAP_L12M_US_Signals (MAP_RowToken)
 
 -- Keep one violation per seller, day, SKU and log-in type. Set the daily and the weekly validation status.
 DROP TABLE IF EXISTS #ViolationRows
@@ -589,7 +589,7 @@ OPTION (MAXDOP 2, RECOMPILE)
 
 DROP TABLE #MAP_L12M_US_Signals, #MAP_L12M_US_Base, #MAP_L12M_US_Listings, #MAP_L12M_US_Batch, #MAP_L12M_US_Product, #MAP_L12M_US_Seller
 
-CREATE NONCLUSTERED INDEX IX_ViolationRows_Location_Product_Date ON #ViolationRows ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, SKU, Login_Type_ID, Notification_ID);
+CREATE NONCLUSTERED INDEX IX_ViolationRows_Location_Product_Date ON #ViolationRows ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, SKU, Login_Type_ID, Notification_ID)
 
 -- One row per seller. The account name and SID come from the latest violation.
 DROP TABLE IF EXISTS #Sellers
@@ -606,7 +606,7 @@ FROM (
 ) RankedSellers
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_Sellers_Location ON #Sellers ([Location ID]);
+CREATE UNIQUE CLUSTERED INDEX IX_Sellers_Location ON #Sellers ([Location ID])
 
 -- Sellers on the top seller list. The list is used only for Top_Reseller_Flag. The list dates are not checked, same as in the old report.
 DROP TABLE IF EXISTS #TopResellers
@@ -616,7 +616,7 @@ FROM _ref.Courtesy_Alerts_Top_Seller_List top_seller
 JOIN #Sellers seller ON seller.[Location ID] = top_seller.Master_New_Location_Id
 WHERE top_seller.Master_New_Location_Id IS NOT NULL
 
-CREATE UNIQUE CLUSTERED INDEX IX_TopResellers_Location ON #TopResellers (New_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_TopResellers_Location ON #TopResellers (New_Location_ID)
 
 -- Strikes of the report sellers that are not cancelled and have a valid notification.
 -- The strike view is slow, so it is read one time here and the next steps use this table.
@@ -649,9 +649,9 @@ WHERE ISNULL(s.Flag_Cancelled, 0) = 0
 	)
 OPTION (RECOMPILE)
 
-CREATE CLUSTERED INDEX IX_ValidStrikes_Location_Product_Period ON #ValidStrikes (New_Location_ID, Product_Type, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted);
+CREATE CLUSTERED INDEX IX_ValidStrikes_Location_Product_Period ON #ValidStrikes (New_Location_ID, Product_Type, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted)
 CREATE NONCLUSTERED INDEX IX_ValidStrikes_Notification ON #ValidStrikes (Notification_ID, New_Location_ID, Product_Type)
-	INCLUDE (ID, Violation_Status, Flag_Is_Active, Flag_Rehab, Buffer_Period_Start_Date, Buffer_Period_End_Date, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted, Product_Suspension_Start_Date, Product_Suspension_End_Date, Valid_From);
+	INCLUDE (ID, Violation_Status, Flag_Is_Active, Flag_Rehab, Buffer_Period_Start_Date, Buffer_Period_End_Date, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted, Product_Suspension_Start_Date, Product_Suspension_End_Date, Valid_From)
 
 -- The latest valid notification per seller and product type. It gives the letter type and the MAP status.
 DROP TABLE IF EXISTS #LatestNotifications
@@ -681,7 +681,7 @@ FROM (
 ) RankedNotifications
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_LatestNotifications_Location_Product ON #LatestNotifications (New_Location_ID, Product_Type);
+CREATE UNIQUE CLUSTERED INDEX IX_LatestNotifications_Location_Product ON #LatestNotifications (New_Location_ID, Product_Type)
 
 -- The latest strike row of the latest notification.
 DROP TABLE IF EXISTS #LatestStrikes
@@ -709,7 +709,7 @@ FROM (
 ) RankedLatestStrikes
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_LatestStrikes_Location_Product ON #LatestStrikes (New_Location_ID, Product_Type);
+CREATE UNIQUE CLUSTERED INDEX IX_LatestStrikes_Location_Product ON #LatestStrikes (New_Location_ID, Product_Type)
 
 --G20 seller only crossjoin
 -- One row per day, product subcategory and seller. Tableau needs these rows for the report layout. G20 data is not used any more.
@@ -746,7 +746,7 @@ OUTER APPLY (
 		,r.ID DESC
 ) rg
 
-CREATE NONCLUSTERED INDEX IX_CTE_cj_Location_Product_Date ON #CTE_cj ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, [Week], [Product Subcategory Enforcement]);
+CREATE NONCLUSTERED INDEX IX_CTE_cj_Location_Product_Date ON #CTE_cj ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, [Week], [Product Subcategory Enforcement])
 
 --Pulling Contacts for report tooltip & covered/uncovered split
 -- The two contact views are slow. Each view is read one time into a temp table.
@@ -767,7 +767,7 @@ JOIN #Sellers seller ON seller.[Location ID] = i.New_Location_ID
 WHERE i.Source_Rank = 1
 OPTION (RECOMPILE)
 
-CREATE NONCLUSTERED INDEX IX_SellerEmailInfo_Location ON #SellerEmailInfo (New_Location_ID) INCLUDE (Product_Type, Product_Category, Email1, Email2, Email3, Email4, Email5, Email6);
+CREATE NONCLUSTERED INDEX IX_SellerEmailInfo_Location ON #SellerEmailInfo (New_Location_ID) INCLUDE (Product_Type, Product_Category, Email1, Email2, Email3, Email4, Email5, Email6)
 
 DROP TABLE IF EXISTS #SellerEmailUnion
 SELECT LOWER(CONVERT(NVARCHAR(255), email_source.Email)) Email
@@ -778,7 +778,7 @@ WHERE email_source.Email IS NOT NULL
 GROUP BY LOWER(CONVERT(NVARCHAR(255), email_source.Email))
 OPTION (RECOMPILE)
 
-CREATE UNIQUE CLUSTERED INDEX IX_SellerEmailUnion_Email ON #SellerEmailUnion (Email);
+CREATE UNIQUE CLUSTERED INDEX IX_SellerEmailUnion_Email ON #SellerEmailUnion (Email)
 
 -- One contact row per seller and product category. The ORDER BY makes the choice the same in every run.
 DROP TABLE IF EXISTS #ContactBase
@@ -854,7 +854,7 @@ GROUP BY contact.[Seller Name Unified]
 	,contact.[New Location ID]
 	,contact.[Product Category]
 
-CREATE UNIQUE CLUSTERED INDEX IX_CTE_Contacts_Location_Category ON #CTE_Contacts ([New Location ID], [Product Category]);
+CREATE UNIQUE CLUSTERED INDEX IX_CTE_Contacts_Location_Category ON #CTE_Contacts ([New Location ID], [Product Category])
 
 -- Output (all G20 sellers + nonG20 for just CSKUs) -- legacy logic
 -- The output now has all authorized US partners that have violations in ViolationsMAP.
@@ -1116,7 +1116,7 @@ LEFT JOIN #Content content
 LEFT JOIN #PartnerLookup partner ON partner.LocationId = scaffold.[Location ID]
 WHERE scaffold.[Location ID] <> 'N/A' -- 10/14/24 ED
 
-CREATE NONCLUSTERED INDEX IX_OutputBase_Selector ON #OutputBase ([Location ID], [Date], SKU, Login_Type_ID) INCLUDE ([Week], [Product Subcategory], [Letter Type]);
+CREATE NONCLUSTERED INDEX IX_OutputBase_Selector ON #OutputBase ([Location ID], [Date], SKU, Login_Type_ID) INCLUDE ([Week], [Product Subcategory], [Letter Type])
 
 -- Rank the sellers for each week and enforcement subcategory. Only rows that are in the report are counted.
 -- The rank uses the number of different SKUs with violations in the week. This count is not used for any penalty calculation.
@@ -1143,7 +1143,7 @@ FROM (
 		,CONVERT(NVARCHAR(20), output_base.[Location ID])
 ) SellerWeeks
 
-CREATE UNIQUE CLUSTERED INDEX IX_WeeklySellerRanks_Week_Product_Location ON #WeeklySellerRanks (Country, [Week], [Product Subcategory Enforcement], [Location ID]);
+CREATE UNIQUE CLUSTERED INDEX IX_WeeklySellerRanks_Week_Product_Location ON #WeeklySellerRanks (Country, [Week], [Product Subcategory Enforcement], [Location ID])
 
 DROP TABLE IF EXISTS #FinalOutput
 SELECT output_base.*
@@ -1183,7 +1183,7 @@ VALUES
 	('BPS', 'BPS Display', 'BPS Display', 'BPS Display'),
 	('CPS', 'CPS Desktop', 'CPS Desktop', 'CPS Desktop'),
 	('CPS', 'CPS Display', 'CPS Display', 'CPS Display'),
-	('CPS', 'CPS Notebook', 'CPS Notebook', 'CPS Notebook');
+	('CPS', 'CPS Notebook', 'CPS Notebook', 'CPS Notebook')
 
 -- For Large Format, use the category name from the Canada Dim_Product table.
 UPDATE category_row
@@ -1209,7 +1209,7 @@ FROM HP_MAP_Canada._analysis.MAP_Price_List_Tool_Export_NEW
 WHERE [File Date] = @MaxFileDateUPC_CA
 GROUP BY SKU
 
-CREATE UNIQUE CLUSTERED INDEX IX_UPC_US_SKU ON #CA_UPC_US (SKU);
+CREATE UNIQUE CLUSTERED INDEX IX_UPC_US_SKU ON #CA_UPC_US (SKU)
 
 DROP TABLE IF EXISTS #CA_MinViolationDate
 SELECT New_Location_ID
@@ -1219,7 +1219,7 @@ FROM HP_MAP_Canada._final.ViolationsMAP
 WHERE Collected_Date >= '2023-11-01'
 GROUP BY New_Location_ID
 
-CREATE UNIQUE CLUSTERED INDEX IX_MinViolationDate_Location ON #CA_MinViolationDate (New_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_MinViolationDate_Location ON #CA_MinViolationDate (New_Location_ID)
 
 -- Fact_Listings is used only for the two listing date columns. It does not add violations.
 DROP TABLE IF EXISTS #CA_Min_Max_Listing_Date
@@ -1233,7 +1233,7 @@ WHERE CAST(f.Collected_Date AS DATE) >= '2023-11-01'
 	AND s.Master_New_Location_Id <> 'N/A'
 GROUP BY s.Master_New_Location_Id
 
-CREATE UNIQUE CLUSTERED INDEX IX_MinMaxListingDate_Location ON #CA_Min_Max_Listing_Date (Master_New_Location_Id);
+CREATE UNIQUE CLUSTERED INDEX IX_MinMaxListingDate_Location ON #CA_Min_Max_Listing_Date (Master_New_Location_Id)
 
 DROP TABLE IF EXISTS #CA_NewSKU
 SELECT DISTINCT SKU
@@ -1241,7 +1241,7 @@ INTO #CA_NewSKU
 FROM HP_MAP_Canada._ref.SKU_Enforcement_Exclusion
 WHERE Flag_Reporting = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_NewSKU_SKU ON #CA_NewSKU (SKU);
+CREATE UNIQUE CLUSTERED INDEX IX_NewSKU_SKU ON #CA_NewSKU (SKU)
 
 DROP TABLE IF EXISTS #CA_Grace_Period
 SELECT DISTINCT CAST('Canada' AS NVARCHAR(10)) Country
@@ -1251,7 +1251,7 @@ SELECT DISTINCT CAST('Canada' AS NVARCHAR(10)) Country
 INTO #CA_Grace_Period
 FROM HP_MAP_Canada._ref.Grace_Period_SKUs
 
-CREATE NONCLUSTERED INDEX IX_GracePeriod_SKU_Dates ON #CA_Grace_Period (SKU, Valid_From, Valid_To);
+CREATE NONCLUSTERED INDEX IX_GracePeriod_SKU_Dates ON #CA_Grace_Period (SKU, Valid_From, Valid_To)
 
 DROP TABLE IF EXISTS #CA_Content
 SELECT Country
@@ -1270,7 +1270,7 @@ FROM (
 ) RankedContent
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_Content_Country_Location ON #CA_Content (Country, HPI_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_Content_Country_Location ON #CA_Content (Country, HPI_Location_ID)
 
 -- Active Canada partners. The list is built one time and used in two steps below.
 DROP TABLE IF EXISTS #CA_ActiveQPP
@@ -1288,7 +1288,7 @@ WHERE p.Flag_Active = 1
 	AND p.Country IN ('CA', 'Canada')
 GROUP BY CONVERT(NVARCHAR(20), p.HPI_Location_ID)
 
-CREATE UNIQUE CLUSTERED INDEX IX_ActiveQPP_Location ON #CA_ActiveQPP (HPI_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_ActiveQPP_Location ON #CA_ActiveQPP (HPI_Location_ID)
 
 -- Notifications that are approved and are not marked as wrong or as an exception.
 -- This table is used for the DGF penalty, the warning flag and the latest letter status.
@@ -1308,8 +1308,8 @@ WHERE n.Notification_Approval_Status <> 0
 	AND ISNULL(n.Wrong_Notification_Flag, 0) = 0
 	AND ISNULL(n.Exception_Flag, 0) = 0
 
-CREATE CLUSTERED INDEX IX_ValidNotifications_Location_Product_Generation ON #CA_ValidNotifications (New_Location_ID, Product_Type, Generation_Date DESC, Notification_ID DESC, ID DESC);
-CREATE NONCLUSTERED INDEX IX_ValidNotifications_Notification ON #CA_ValidNotifications (Notification_ID, New_Location_ID, Product_Type) INCLUDE (Letter_Type, DGF_Penalty);
+CREATE CLUSTERED INDEX IX_ValidNotifications_Location_Product_Generation ON #CA_ValidNotifications (New_Location_ID, Product_Type, Generation_Date DESC, Notification_ID DESC, ID DESC)
+CREATE NONCLUSTERED INDEX IX_ValidNotifications_Notification ON #CA_ValidNotifications (Notification_ID, New_Location_ID, Product_Type) INCLUDE (Letter_Type, DGF_Penalty)
 
 DROP TABLE IF EXISTS #CA_StoreFrontNames
 SELECT Country
@@ -1328,7 +1328,7 @@ FROM (
 ) ApprovedStorefronts
 GROUP BY Country, New_Location_ID
 
-CREATE UNIQUE CLUSTERED INDEX IX_StoreFrontNames_Country_Location ON #CA_StoreFrontNames (Country, New_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_StoreFrontNames_Country_Location ON #CA_StoreFrontNames (Country, New_Location_ID)
 
 -- Daily_MAP_Violations_VI and the old #CTE_Adhoc logic are not used any more. ViolationsMAP is the only source of violations.
 --PENDING: Remove Fact ID and pull screenshot URL above at time of Daily creation
@@ -1343,7 +1343,7 @@ WHERE dp.Valid_From < DATEADD(DAY, 1, @ThroughDate)
 	AND dp.In_MAP_Scope_Flag = 'In MAP Scope'
 OPTION (MAXDOP 2, RECOMPILE)
 
-CREATE INDEX IX_MAP_L12M_Product ON #MAP_L12M_CA_Product (SKU, Valid_From, Valid_To);
+CREATE INDEX IX_MAP_L12M_Product ON #MAP_L12M_CA_Product (SKU, Valid_From, Valid_To)
 
 -- Sellers that were valid at some time in the report period.
 SELECT sel.Master_New_Location_Id, sel.Valid_From, sel.Valid_To
@@ -1353,7 +1353,7 @@ WHERE sel.Valid_From < DATEADD(DAY, 1, @ThroughDate)
 	AND sel.Valid_To >= @StartDate
 OPTION (MAXDOP 2, RECOMPILE)
 
-CREATE INDEX IX_MAP_L12M_Seller ON #MAP_L12M_CA_Seller (Master_New_Location_Id, Valid_From, Valid_To);
+CREATE INDEX IX_MAP_L12M_Seller ON #MAP_L12M_CA_Seller (Master_New_Location_Id, Valid_From, Valid_To)
 
 -- Empty tables for the daily loop below. One holds the violations of one day, the other holds their listings.
 SELECT TOP (0) v.Collected_Date, v.Comments, v.Data_Source, v.Eligible_IR_Amount, v.Fact_ID, v.Flag_Bundle, v.HP_Reason_ID, v.Listing_ID, v.Login_Type_ID, v.Lowest_Possible_Price, v.MAP,
@@ -1363,13 +1363,13 @@ SELECT TOP (0) v.Collected_Date, v.Comments, v.Data_Source, v.Eligible_IR_Amount
 INTO #MAP_L12M_CA_Batch
 FROM HP_MAP_Canada._final.ViolationsMAP v
 
-CREATE INDEX IX_MAP_L12M_Batch_SKU ON #MAP_L12M_CA_Batch (SKU, Collected_Date);
+CREATE INDEX IX_MAP_L12M_Batch_SKU ON #MAP_L12M_CA_Batch (SKU, Collected_Date)
 
 SELECT TOP (0) CONVERT(BIGINT, nm.ID) ID, nm.ASIN, nm.Listing_URL
 INTO #MAP_L12M_CA_Listings
 FROM HP_MAP_Canada._final.Seller_Pricing_NewMo_Canada nm
 
-CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Listings ON #MAP_L12M_CA_Listings (ID);
+CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Listings ON #MAP_L12M_CA_Listings (ID)
 
 DECLARE @MAP_L12M_CA_BatchStart DATE = @StartDate, @MAP_L12M_CA_BatchEnd DATE = DATEADD(DAY, 1, @StartDate)
 
@@ -1468,7 +1468,7 @@ FROM (
 ) base
 WHERE 1 = 0
 
-CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Base_Token ON #MAP_L12M_CA_Base (MAP_RowToken);
+CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Base_Token ON #MAP_L12M_CA_Base (MAP_RowToken)
 
 -- Load the violations one day at a time. All joined rows are kept. No DISTINCT is used on the violations.
 WHILE @MAP_L12M_CA_BatchStart <= @ThroughDate
@@ -1610,7 +1610,7 @@ INTO #MAP_L12M_CA_Signals
 FROM #MAP_L12M_CA_Base base
 OPTION (MAXDOP 2, RECOMPILE)
 
-CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Signals ON #MAP_L12M_CA_Signals (MAP_RowToken);
+CREATE UNIQUE CLUSTERED INDEX IX_MAP_L12M_Signals ON #MAP_L12M_CA_Signals (MAP_RowToken)
 
 -- Keep one violation per seller, day, SKU and log-in type. Set the daily and the weekly validation status.
 DROP TABLE IF EXISTS #CA_ViolationRows
@@ -1640,7 +1640,7 @@ OPTION (MAXDOP 2, RECOMPILE)
 
 DROP TABLE #MAP_L12M_CA_Signals, #MAP_L12M_CA_Base, #MAP_L12M_CA_Listings, #MAP_L12M_CA_Batch, #MAP_L12M_CA_Product, #MAP_L12M_CA_Seller
 
-CREATE NONCLUSTERED INDEX IX_ViolationRows_Location_Product_Date ON #CA_ViolationRows ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, SKU, Login_Type_ID, Notification_ID);
+CREATE NONCLUSTERED INDEX IX_ViolationRows_Location_Product_Date ON #CA_ViolationRows ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, SKU, Login_Type_ID, Notification_ID)
 
 -- One row per seller. The account name and SID come from the latest violation.
 DROP TABLE IF EXISTS #CA_Sellers
@@ -1657,7 +1657,7 @@ FROM (
 ) RankedSellers
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_Sellers_Location ON #CA_Sellers ([Location ID]);
+CREATE UNIQUE CLUSTERED INDEX IX_Sellers_Location ON #CA_Sellers ([Location ID])
 
 -- Sellers on the top seller list. The list is used only for Top_Reseller_Flag. The list dates are not checked, same as in the old report.
 DROP TABLE IF EXISTS #CA_TopResellers
@@ -1667,7 +1667,7 @@ FROM HP_MAP_Canada._ref.Courtesy_Alerts_Top_Seller_List top_seller
 JOIN #CA_Sellers seller ON seller.[Location ID] = top_seller.Master_New_Location_Id
 WHERE top_seller.Master_New_Location_Id IS NOT NULL
 
-CREATE UNIQUE CLUSTERED INDEX IX_TopResellers_Location ON #CA_TopResellers (New_Location_ID);
+CREATE UNIQUE CLUSTERED INDEX IX_TopResellers_Location ON #CA_TopResellers (New_Location_ID)
 
 -- Strikes of the report sellers that are not cancelled and have a valid notification.
 -- The strike view is slow, so it is read one time here and the next steps use this table.
@@ -1700,9 +1700,9 @@ WHERE ISNULL(s.Flag_Cancelled, 0) = 0
 	)
 OPTION (RECOMPILE)
 
-CREATE CLUSTERED INDEX IX_ValidStrikes_Location_Product_Period ON #CA_ValidStrikes (New_Location_ID, Product_Type, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted);
+CREATE CLUSTERED INDEX IX_ValidStrikes_Location_Product_Period ON #CA_ValidStrikes (New_Location_ID, Product_Type, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted)
 CREATE NONCLUSTERED INDEX IX_ValidStrikes_Notification ON #CA_ValidStrikes (Notification_ID, New_Location_ID, Product_Type)
-	INCLUDE (ID, Violation_Status, Flag_Is_Active, Flag_Rehab, Buffer_Period_Start_Date, Buffer_Period_End_Date, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted, Product_Suspension_Start_Date, Product_Suspension_End_Date, Valid_From);
+	INCLUDE (ID, Violation_Status, Flag_Is_Active, Flag_Rehab, Buffer_Period_Start_Date, Buffer_Period_End_Date, Penalty_Period_Start_Date, Penalty_Period_End_Date_Adjusted, Product_Suspension_Start_Date, Product_Suspension_End_Date, Valid_From)
 
 -- The latest valid notification per seller and product type. It gives the letter type and the MAP status.
 DROP TABLE IF EXISTS #CA_LatestNotifications
@@ -1732,7 +1732,7 @@ FROM (
 ) RankedNotifications
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_LatestNotifications_Location_Product ON #CA_LatestNotifications (New_Location_ID, Product_Type);
+CREATE UNIQUE CLUSTERED INDEX IX_LatestNotifications_Location_Product ON #CA_LatestNotifications (New_Location_ID, Product_Type)
 
 -- The latest strike row of the latest notification.
 DROP TABLE IF EXISTS #CA_LatestStrikes
@@ -1760,7 +1760,7 @@ FROM (
 ) RankedLatestStrikes
 WHERE RN = 1
 
-CREATE UNIQUE CLUSTERED INDEX IX_LatestStrikes_Location_Product ON #CA_LatestStrikes (New_Location_ID, Product_Type);
+CREATE UNIQUE CLUSTERED INDEX IX_LatestStrikes_Location_Product ON #CA_LatestStrikes (New_Location_ID, Product_Type)
 
 --G20 seller only crossjoin
 -- One row per day, product subcategory and seller. Tableau needs these rows for the report layout. G20 data is not used any more.
@@ -1803,7 +1803,7 @@ OUTER APPLY (
 	ORDER BY r.Valid_From DESC, r.ID DESC
 ) rg
 
-CREATE NONCLUSTERED INDEX IX_CTE_cj_Location_Product_Date ON #CA_CTE_cj ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, [Week], [Product Subcategory Enforcement]);
+CREATE NONCLUSTERED INDEX IX_CTE_cj_Location_Product_Date ON #CA_CTE_cj ([Location ID], [Product Subcategory], [Date]) INCLUDE (Master_SID, [Week], [Product Subcategory Enforcement])
 
 --Pulling Contacts for report tooltip & covered/uncovered split
 -- The two contact views are slow. Each view is read one time into a temp table.
@@ -1824,7 +1824,7 @@ JOIN #CA_Sellers seller ON seller.[Location ID] = i.New_Location_ID
 WHERE i.Source_Rank = 1
 OPTION (RECOMPILE)
 
-CREATE NONCLUSTERED INDEX IX_SellerEmailInfo_Location ON #CA_SellerEmailInfo (New_Location_ID) INCLUDE (Product_Type, Product_Category, Email1, Email2, Email3, Email4, Email5, Email6);
+CREATE NONCLUSTERED INDEX IX_SellerEmailInfo_Location ON #CA_SellerEmailInfo (New_Location_ID) INCLUDE (Product_Type, Product_Category, Email1, Email2, Email3, Email4, Email5, Email6)
 
 -- One contact row per seller and product category. The ORDER BY makes the choice the same in every run.
 DROP TABLE IF EXISTS #CA_ContactBase
@@ -1897,7 +1897,7 @@ GROUP BY contact.[Seller Name Unified]
 	,contact.[New Location ID]
 	,contact.[Product Category]
 
-CREATE UNIQUE CLUSTERED INDEX IX_CTE_Contacts_Location_Category ON #CA_CTE_Contacts ([New Location ID], [Product Category]);
+CREATE UNIQUE CLUSTERED INDEX IX_CTE_Contacts_Location_Category ON #CA_CTE_Contacts ([New Location ID], [Product Category])
 
 -- OUTPUT (all G20 sellers + nonG20 for just CSKUs)
 -- The output now has all authorized Canada partners that have violations in ViolationsMAP.
@@ -2148,7 +2148,7 @@ LEFT JOIN #CA_Content content
 LEFT JOIN #PartnerLookup partner ON partner.LocationId = scaffold.[Location ID]
 WHERE scaffold.[Location ID] <> 'N/A' -- 10/14/24 ED
 
-CREATE NONCLUSTERED INDEX IX_OutputBase_Selector ON #CA_OutputBase ([Location ID], [Date], SKU, Login_Type_ID) INCLUDE ([Week], [Product Subcategory], [Letter Type]);
+CREATE NONCLUSTERED INDEX IX_OutputBase_Selector ON #CA_OutputBase ([Location ID], [Date], SKU, Login_Type_ID) INCLUDE ([Week], [Product Subcategory], [Letter Type])
 
 -- Rank the sellers for each week and enforcement subcategory. Only rows that are in the report are counted.
 -- The rank uses the number of different SKUs with violations in the week. This count is not used for any penalty calculation.
@@ -2175,7 +2175,7 @@ FROM (
 		,CONVERT(NVARCHAR(20), output_base.[Location ID])
 ) SellerWeeks
 
-CREATE UNIQUE CLUSTERED INDEX IX_WeeklySellerRanks_Week_Product_Location ON #CA_WeeklySellerRanks (Country, [Week], [Product Subcategory Enforcement], [Location ID]);
+CREATE UNIQUE CLUSTERED INDEX IX_WeeklySellerRanks_Week_Product_Location ON #CA_WeeklySellerRanks (Country, [Week], [Product Subcategory Enforcement], [Location ID])
 
 DROP TABLE IF EXISTS #CA_FinalOutput
 SELECT output_base.*
@@ -2195,10 +2195,10 @@ JOIN #CA_WeeklySellerRanks seller_rank
 -- Stop if the US or Canada has no rows for the export dates. The old rows stay in the report table.
 IF NOT EXISTS (SELECT 1 FROM #FinalOutput WHERE [Date] BETWEEN @ExportStartDate AND @ThroughDate)
 	OR NOT EXISTS (SELECT 1 FROM #CA_FinalOutput WHERE [Date] BETWEEN @ExportStartDate AND @ThroughDate)
-	THROW 51000, 'L12M shadow output lacks a required country; previous output retained.', 1;
+	THROW 51000, 'L12M shadow output lacks a required country; previous output retained.', 1
 
 -- The delete and the insert run in one transaction. If an error happens, XACT_ABORT rolls back both and the old rows stay in the table.
-BEGIN TRANSACTION;
+BEGIN TRANSACTION
 
 DELETE target
 FROM _report.Violations_L12M target
@@ -2384,7 +2384,7 @@ FROM (
 ) final
 WHERE final.[Date] BETWEEN @ExportStartDate AND @ThroughDate
 
-COMMIT TRANSACTION;
+COMMIT TRANSACTION
 
 -- The report is already saved here. The email is only an extra, so a mail error must not fail the SP.
 BEGIN TRY
@@ -2395,7 +2395,7 @@ BEGIN TRY
 				@recipients = 'pbelezhkov@dsmengines.com;edeneva@dsmengines.com;zfraile@dsmengines.com',
 				@body = 'The _report.Violations_L12M table has been refreshed.',
 				@subject = 'The Violations L12M export has been generated',
-				@body_format = 'HTML';
+				@body_format = 'HTML'
 	END
 END TRY
 BEGIN CATCH
