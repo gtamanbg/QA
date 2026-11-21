@@ -238,7 +238,8 @@
                 }
         });
         $('#filter_FromDate').on('change', function (e) {
-            $("#filter_FromDate").val(getSunday($("#filter_FromDate").val()));
+            // Report Date single day - 11/16/26: the selected date is no longer moved to the Sunday of its week
+            //$("#filter_FromDate").val(getSunday($("#filter_FromDate").val()));
             $('.selectpicker').selectpicker('refresh');
             filterOnChange(this);
         });
@@ -567,7 +568,9 @@
         });
 
         function ResetFilters() {
-            $('#filter_FromDate').val('@Model.FirstDayOfPreviousWeek');
+            // Report Date single day - 11/16/26: Reset Filters puts back today's date, not the first day of the current week
+            @*$('#filter_FromDate').val('@Model.FirstDayOfPreviousWeek');*@
+            $('#filter_FromDate').val('@Model.DefaultReportDate');
             //$('#filter_ToDate').val('@Model.LastDayOfPreviousWeek');
             $('#filter_Policy option').prop('selected', true);
             $('#filter_SellerType option').prop('selected', true);

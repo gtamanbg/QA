@@ -44,7 +44,8 @@ namespace MAP_WebApp.Pages
         public List<SelectListItem> CountryList = new List<SelectListItem>();
         public string FilterFromDate = "";
         public string FilterToDate = "";
-        public string FirstDayOfPreviousWeek = "";
+        //public string FirstDayOfPreviousWeek = ""; // Report Date single day - 11/16/26: replaced by DefaultReportDate
+        public string DefaultReportDate = "";
         public string LastDayOfPreviousWeek = "";
         public string LastPage = "1";
 
@@ -76,11 +77,14 @@ namespace MAP_WebApp.Pages
                 ProductTypeList = DropDownItems.Where(e => e.Type == 8).OrderBy(e => e.OrderIndex).Select(e => new SelectListItem() { Value = e.Id.ToString(), Text = e.Value, Selected = (TempData["productType"] == null ? true : (TempData["productType"].ToString().Split(',').Contains(e.Id.ToString()) ? true : false)) }).ToList();
                 CountryList = DropDownItems.Where(e => e.Type == 10).OrderBy(e => e.OrderIndex).Select(e => new SelectListItem() { Value = e.Id.ToString(), Text = e.Value, Selected = (lcCountry_id == int.Parse(e.Id)) }).ToList();
             
-                var lcDateFilterDefValue = await _context.fn_GetFisrtAndLastDayOfWeekAsync("");
+                // Report Date single day - 11/16/26: the default Report Date is today, not the first day of the current week
+                //var lcDateFilterDefValue = await _context.fn_GetFisrtAndLastDayOfWeekAsync("");
 
-                FirstDayOfPreviousWeek = lcDateFilterDefValue.FistDayOfWeek.ToString("yyyy-MM-dd");
+                //FirstDayOfPreviousWeek = lcDateFilterDefValue.FistDayOfWeek.ToString("yyyy-MM-dd");
+                DefaultReportDate = DateTime.Today.ToString("yyyy-MM-dd");
 
-                FilterFromDate = TempData["fromDate"] != null ? DateTime.Parse(TempData["fromDate"].ToString()).ToString("yyyy-MM-dd") : FirstDayOfPreviousWeek;
+                //FilterFromDate = TempData["fromDate"] != null ? DateTime.Parse(TempData["fromDate"].ToString()).ToString("yyyy-MM-dd") : FirstDayOfPreviousWeek;
+                FilterFromDate = TempData["fromDate"] != null ? DateTime.Parse(TempData["fromDate"].ToString()).ToString("yyyy-MM-dd") : DefaultReportDate;
                 if (TempData["LastPage"] != null && TempData["LastPage"].ToString() != "")
                     LastPage = TempData["LastPage"].ToString();
 

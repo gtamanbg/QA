@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAP Admin Tool - Report Date changes</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --text:#1c2330; --muted:#5b6575; --line:#d9dee6; --accent:#0b62a8;
+  --head:#eef1f5; --del-bg:#ffe9e7; --del-ln:#ffd3cf; --del-fg:#8a1c14; --add-bg:#e3f6e7; --add-ln:#c5ebcd; --add-fg:#12612a;
+  --empty:#f0f2f5; --code:#1c2330; --note:#fff8e1; --note-line:#ecd98a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161c; --panel:#1a2029; --text:#e3e8ef; --muted:#9aa5b5; --line:#2d3644; --accent:#6db6f2;
+    --head:#222a35; --del-bg:#3d1f1f; --del-ln:#532626; --del-fg:#ffb3ab; --add-bg:#17361f; --add-ln:#1f4a2a; --add-fg:#9be3ad;
+    --empty:#161b22; --code:#e3e8ef; --note:#2c2817; --note-line:#5c5226;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+main{max-width:1500px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:26px;margin:0 0 6px}
+.lead{color:var(--muted);margin:0 0 22px;max-width:900px}
+h2.file,h2.func{margin:44px 0 10px;font-size:19px;font-family:Consolas,"Cascadia Mono",Menlo,monospace;word-break:break-all;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h2.func{margin-top:34px;font-size:17px;border-bottom-width:1px}
+.kind{display:block;font:600 11px/1.4 "Segoe UI",system-ui,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.purpose{color:var(--muted);margin:0 0 6px;max-width:900px}
+code{font-family:Consolas,"Cascadia Mono",Menlo,monospace;font-size:.92em;background:var(--head);padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+.box,.note{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:0 0 18px}
+.note{background:var(--note);border-color:var(--note-line)}
+.note p{margin:0 0 10px;max-width:1000px}
+.box h2{font-size:17px;margin:0 0 10px}
+.box ul{margin:0;padding-left:20px;max-width:1000px}
+.box li{margin:5px 0}
+.scroll{overflow-x:auto}
+table.sum,table.ex{border-collapse:collapse;width:100%;font-size:14px}
+table.sum th,table.sum td,table.ex th,table.ex td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.sum th,table.ex th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+table.sum td.n,table.sum td.l{white-space:nowrap;font-variant-numeric:tabular-nums}
+table.sum td.f{font-family:Consolas,"Cascadia Mono",Menlo,monospace;font-size:13px}
+table.ex{max-width:900px;background:var(--panel);border:1px solid var(--line)}
+.change{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:18px 0 0;overflow:hidden}
+.change header{padding:14px 18px 10px;border-bottom:1px solid var(--line)}
+.num{display:inline-block;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--accent);border-radius:4px;padding:2px 8px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .num{color:#0c1118}}
+.change h3{margin:8px 0 4px;font-size:18px}
+.where{color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:4px 14px}
+.where .path,.where .obj{font-family:Consolas,"Cascadia Mono",Menlo,monospace;word-break:break-all}
+.where .obj{color:var(--text);font-weight:600}
+.why{padding:12px 18px 6px}
+.why h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.why p{margin:0 0 9px;max-width:1000px}
+.diffwrap{overflow-x:auto;border-top:1px solid var(--line)}
+table.diff{border-collapse:collapse;width:100%;min-width:900px;table-layout:fixed;font:12.5px/1.5 Consolas,"Cascadia Mono",Menlo,monospace;color:var(--code)}
+col.c-ln{width:46px} col.c-mk{width:18px} col.c-code{width:calc(50% - 64px)}
+table.diff th{font:600 12px/1.4 "Segoe UI",system-ui,Arial,sans-serif;text-align:left;padding:7px 10px;background:var(--head);border-bottom:1px solid var(--line);color:var(--muted)}
+table.diff th + th{border-left:2px solid var(--line)}
+table.diff td{padding:1px 6px;vertical-align:top}
+td.ln{text-align:right;color:var(--muted);user-select:none;background:var(--head)}
+td.mk{text-align:center;user-select:none;font-weight:700;padding:1px 0}
+td.code{white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;-moz-tab-size:4}
+table.diff td:nth-child(4){border-left:2px solid var(--line)}
+td.del{background:var(--del-bg)} td.ln.del{background:var(--del-ln)} td.mk.del{color:var(--del-fg)}
+td.add{background:var(--add-bg)} td.ln.add{background:var(--add-ln)} td.mk.add{color:var(--add-fg)}
+td.empty{background:var(--empty)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin:10px 0 0}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid var(--line)}
+.legend .l-del::before{background:var(--del-bg)} .legend .l-add::before{background:var(--add-bg)} .legend .l-eq::before{background:var(--panel)}
+</style>
+</head>
+<body>
+<main>
+<h1>MAP Admin Tool &mdash; Report Date now works with one day</h1>
+<p class="lead">Every change, side by side. Left is the code before, right is the code after. In total there are 19 changes:
+4 in 2 files of the app and 15 in 5 database functions (the same 3 small changes in each function).
+In the new code every old line is kept as a comment, and the new line is placed right under it.</p>
+
+<div class="box">
+<h2>The change in short</h2>
+<ul>
+<li><b>Before:</b> the Report Date field opened on the Sunday of the current week. When the user picked a date, the page moved it back to the Sunday of that week, and the database returned the notifications of the week.</li>
+<li><b>Now:</b> the Report Date field opens on today's date. When the user picks a date, the page keeps that date, and the database returns only the notifications with a <code>GenerationDate</code> on that day.</li>
+<li>The same rule is used by the notifications table, the Seller Name filter, the Contacts page and the two export functions.</li>
+<li>All new comments start with the text <code>Report Date single day - 11/16/26</code>, so you can find every change with a simple search.</li>
+</ul>
+<div class="legend"><span class="l-del">&minus; line as it was before</span><span class="l-add">+ new or changed line</span><span class="l-eq">line that is not changed (shown only to help you find the place)</span></div>
+</div>
+
+<div class="box">
+<h2>List of all changes</h2>
+<div class="scroll">
+<table class="sum">
+<thead><tr><th>#</th><th>File / function</th><th>Line</th><th>Change</th></tr></thead>
+<tbody>
+<tr><td class="n"><a href="#c1">1</a></td><td class="f">Index.cshtml.cs</td><td class="l">47</td><td><a href="#c1">A new place to keep the default date</a></td></tr>
+<tr><td class="n"><a href="#c2">2</a></td><td class="f">Index.cshtml.cs</td><td class="l">80</td><td><a href="#c2">The default date is today, not the Sunday of the week</a></td></tr>
+<tr><td class="n"><a href="#c3">3</a></td><td class="f">Index.cshtml</td><td class="l">241</td><td><a href="#c3">The date the user picks is not changed any more</a></td></tr>
+<tr><td class="n"><a href="#c4">4</a></td><td class="f">Index.cshtml</td><td class="l">571</td><td><a href="#c4">"Reset Filters" puts back today's date</a></td></tr>
+<tr><td class="n"><a href="#c5">5</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationList</td><td class="l">20</td><td><a href="#c5">CREATE becomes ALTER</a></td></tr>
+<tr><td class="n"><a href="#c6">6</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationList</td><td class="l">59</td><td><a href="#c6">The end of the date range is the next day, not Saturday</a></td></tr>
+<tr><td class="n"><a href="#c7">7</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationList</td><td class="l">129</td><td><a href="#c7">"earlier than the next day" instead of "until Saturday"</a></td></tr>
+<tr><td class="n"><a href="#c8">8</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetSellerList</td><td class="l">150</td><td><a href="#c8">CREATE becomes ALTER</a></td></tr>
+<tr><td class="n"><a href="#c9">9</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetSellerList</td><td class="l">172</td><td><a href="#c9">The end of the date range is the next day, not Saturday</a></td></tr>
+<tr><td class="n"><a href="#c10">10</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetSellerList</td><td class="l">203</td><td><a href="#c10">"earlier than the next day" instead of "until Saturday"</a></td></tr>
+<tr><td class="n"><a href="#c11">11</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationContactList</td><td class="l">223</td><td><a href="#c11">CREATE becomes ALTER</a></td></tr>
+<tr><td class="n"><a href="#c12">12</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationContactList</td><td class="l">253</td><td><a href="#c12">The end of the date range is the next day, not Saturday</a></td></tr>
+<tr><td class="n"><a href="#c13">13</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationContactList</td><td class="l">307</td><td><a href="#c13">"earlier than the next day" instead of "until Saturday"</a></td></tr>
+<tr><td class="n"><a href="#c14">14</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationForExport</td><td class="l">332</td><td><a href="#c14">CREATE becomes ALTER</a></td></tr>
+<tr><td class="n"><a href="#c15">15</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationForExport</td><td class="l">358</td><td><a href="#c15">The end of the date range is the next day, not Saturday</a></td></tr>
+<tr><td class="n"><a href="#c16">16</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationForExport</td><td class="l">400</td><td><a href="#c16">"earlier than the next day" instead of "until Saturday"</a></td></tr>
+<tr><td class="n"><a href="#c17">17</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationDetailsForExport</td><td class="l">421</td><td><a href="#c17">CREATE becomes ALTER</a></td></tr>
+<tr><td class="n"><a href="#c18">18</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationDetailsForExport</td><td class="l">457</td><td><a href="#c18">The end of the date range is the next day, not Saturday</a></td></tr>
+<tr><td class="n"><a href="#c19">19</a></td><td class="f">DB_Objects_ReportDate_SingleDay.sql &rarr; fn_GetNotificationDetailsForExport</td><td class="l">514</td><td><a href="#c19">"earlier than the next day" instead of "until Saturday"</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="box">
+<h2>What I did not change</h2>
+<ul>
+<li><code>fn_GetFisrtAndLastDayOfWeek</code> (database) &mdash; the app does not call it any more, but I left it in the database as it is.</li>
+<li><code>fn_GetNotificationTotal</code> (database) &mdash; it uses <code>GenerationDate</code> only for an old rule about notifications from before 28 Aug 2020. It has nothing to do with the Report Date filter.</li>
+<li><code>usp_GetDataSets</code> (database) &mdash; it only runs the commands that are saved in the table <code>N_ExportTemplatesDataSources</code>. It has no date logic of its own.</li>
+<li>The table <code>D_Notification</code> &mdash; no change in structure or data.</li>
+<li><code>getSunday</code> in <code>wwwroot/js/site.js</code> and <code>fn_GetFisrtAndLastDayOfWeekAsync</code> in <code>Data/ToolDBContext.cs</code> &mdash; they are not used any more, but I left them in place.</li>
+</ul>
+</div>
+
+<h2 class="file"><span class="kind">App file</span>MAP_Admin_Tool/MAP_WebApp/MAP_WebApp/Pages/Index.cshtml.cs</h2>
+
+<section class="change" id="c1">
+  <header>
+    <span class="num">Change 1</span>
+    <h3>A new place to keep the default date</h3>
+    <div class="where"><span class="path">MAP_Admin_Tool/MAP_WebApp/MAP_WebApp/Pages/Index.cshtml.cs</span><span class="line">line 47</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>The page keeps the date it shows by default in a small "box" (a variable). The old box was called <code>FirstDayOfPreviousWeek</code> because it held the Sunday of the week.</p><p>I commented out the old box and added a new one called <code>DefaultReportDate</code>. It works in exactly the same way, but its name now says what it really holds: the date that the Report Date field shows by default (today).</p><p>The line under it, <code>LastDayOfPreviousWeek</code>, is <b>not</b> changed. The page still mentions it in an old line that the original developer left commented, and removing it would stop the app from building.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; Index.cshtml.cs</th><th colspan="3">After &mdash; Index.cshtml.cs</th></tr></thead>
+    <tbody>
+<tr><td class="ln">44</td><td class="mk"></td><td class="code">        public List&lt;SelectListItem&gt; CountryList = new List&lt;SelectListItem&gt;();</td><td class="ln">44</td><td class="mk"></td><td class="code">        public List&lt;SelectListItem&gt; CountryList = new List&lt;SelectListItem&gt;();</td></tr>
+<tr><td class="ln">45</td><td class="mk"></td><td class="code">        public string FilterFromDate = "";</td><td class="ln">45</td><td class="mk"></td><td class="code">        public string FilterFromDate = "";</td></tr>
+<tr><td class="ln">46</td><td class="mk"></td><td class="code">        public string FilterToDate = "";</td><td class="ln">46</td><td class="mk"></td><td class="code">        public string FilterToDate = "";</td></tr>
+<tr><td class="ln del">47</td><td class="mk del">&minus;</td><td class="code del">        public string FirstDayOfPreviousWeek = "";</td><td class="ln add">47</td><td class="mk add">+</td><td class="code add">        //public string FirstDayOfPreviousWeek = ""; // Report Date single day - 11/16/26: replaced by DefaultReportDate</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">48</td><td class="mk add">+</td><td class="code add">        public string DefaultReportDate = "";</td></tr>
+<tr><td class="ln">48</td><td class="mk"></td><td class="code">        public string LastDayOfPreviousWeek = "";</td><td class="ln">49</td><td class="mk"></td><td class="code">        public string LastDayOfPreviousWeek = "";</td></tr>
+<tr><td class="ln">49</td><td class="mk"></td><td class="code">        public string LastPage = "1";</td><td class="ln">50</td><td class="mk"></td><td class="code">        public string LastPage = "1";</td></tr>
+<tr><td class="ln">50</td><td class="mk"></td><td class="code">&nbsp;</td><td class="ln">51</td><td class="mk"></td><td class="code">&nbsp;</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c2">
+  <header>
+    <span class="num">Change 2</span>
+    <h3>The default date is today, not the Sunday of the week</h3>
+    <div class="where"><span class="path">MAP_Admin_Tool/MAP_WebApp/MAP_WebApp/Pages/Index.cshtml.cs</span><span class="line">line 80</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p><b>Before:</b> when the landing page opened, the app asked the database (function <code>fn_GetFisrtAndLastDayOfWeek</code>) for the first day (Sunday) of the current week and put that date in the Report Date field.</p><p><b>Now:</b> the app does not ask the database for this any more. It takes today's date (<code>DateTime.Today</code>) and puts it in the Report Date field. The first two old lines are commented out because they are not needed any more.</p><p>The last line decides which date the field shows. Its logic is the same as before: if the user already picked a date earlier (for example, opened a notification and came back), the app keeps that date. If not, it uses the default. The only difference is that the default is now today.</p><p>Note: "today" is the date of the web server where the app runs. Before, it was the date of the database server.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; Index.cshtml.cs</th><th colspan="3">After &mdash; Index.cshtml.cs</th></tr></thead>
+    <tbody>
+<tr><td class="ln">76</td><td class="mk"></td><td class="code">                ProductTypeList = DropDownItems.Where(e =&gt; e.Type == 8).OrderBy(e =&gt; e.OrderIndex).Select(e =&gt; new SelectListItem() { Value = e.Id.ToString(), Text = e.Value, Selected = (TempData["productType"] == null ? true : (TempData["productType"].ToString().Split(',').Contains(e.Id.ToString()) ? true : false)) }).ToList();</td><td class="ln">77</td><td class="mk"></td><td class="code">                ProductTypeList = DropDownItems.Where(e =&gt; e.Type == 8).OrderBy(e =&gt; e.OrderIndex).Select(e =&gt; new SelectListItem() { Value = e.Id.ToString(), Text = e.Value, Selected = (TempData["productType"] == null ? true : (TempData["productType"].ToString().Split(',').Contains(e.Id.ToString()) ? true : false)) }).ToList();</td></tr>
+<tr><td class="ln">77</td><td class="mk"></td><td class="code">                CountryList = DropDownItems.Where(e =&gt; e.Type == 10).OrderBy(e =&gt; e.OrderIndex).Select(e =&gt; new SelectListItem() { Value = e.Id.ToString(), Text = e.Value, Selected = (lcCountry_id == int.Parse(e.Id)) }).ToList();</td><td class="ln">78</td><td class="mk"></td><td class="code">                CountryList = DropDownItems.Where(e =&gt; e.Type == 10).OrderBy(e =&gt; e.OrderIndex).Select(e =&gt; new SelectListItem() { Value = e.Id.ToString(), Text = e.Value, Selected = (lcCountry_id == int.Parse(e.Id)) }).ToList();</td></tr>
+<tr><td class="ln">78</td><td class="mk"></td><td class="code">            </td><td class="ln">79</td><td class="mk"></td><td class="code">            </td></tr>
+<tr><td class="ln del">79</td><td class="mk del">&minus;</td><td class="code del">                var lcDateFilterDefValue = await _context.fn_GetFisrtAndLastDayOfWeekAsync("");</td><td class="ln add">80</td><td class="mk add">+</td><td class="code add">                // Report Date single day - 11/16/26: the default Report Date is today, not the first day of the current week</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">81</td><td class="mk add">+</td><td class="code add">                //var lcDateFilterDefValue = await _context.fn_GetFisrtAndLastDayOfWeekAsync("");</td></tr>
+<tr><td class="ln">80</td><td class="mk"></td><td class="code">&nbsp;</td><td class="ln">82</td><td class="mk"></td><td class="code">&nbsp;</td></tr>
+<tr><td class="ln del">81</td><td class="mk del">&minus;</td><td class="code del">                FirstDayOfPreviousWeek = lcDateFilterDefValue.FistDayOfWeek.ToString("yyyy-MM-dd");</td><td class="ln add">83</td><td class="mk add">+</td><td class="code add">                //FirstDayOfPreviousWeek = lcDateFilterDefValue.FistDayOfWeek.ToString("yyyy-MM-dd");</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">84</td><td class="mk add">+</td><td class="code add">                DefaultReportDate = DateTime.Today.ToString("yyyy-MM-dd");</td></tr>
+<tr><td class="ln">82</td><td class="mk"></td><td class="code">&nbsp;</td><td class="ln">85</td><td class="mk"></td><td class="code">&nbsp;</td></tr>
+<tr><td class="ln del">83</td><td class="mk del">&minus;</td><td class="code del">                FilterFromDate = TempData["fromDate"] != null ? DateTime.Parse(TempData["fromDate"].ToString()).ToString("yyyy-MM-dd") : FirstDayOfPreviousWeek;</td><td class="ln add">86</td><td class="mk add">+</td><td class="code add">                //FilterFromDate = TempData["fromDate"] != null ? DateTime.Parse(TempData["fromDate"].ToString()).ToString("yyyy-MM-dd") : FirstDayOfPreviousWeek;</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">87</td><td class="mk add">+</td><td class="code add">                FilterFromDate = TempData["fromDate"] != null ? DateTime.Parse(TempData["fromDate"].ToString()).ToString("yyyy-MM-dd") : DefaultReportDate;</td></tr>
+<tr><td class="ln">84</td><td class="mk"></td><td class="code">                if (TempData["LastPage"] != null &amp;&amp; TempData["LastPage"].ToString() != "")</td><td class="ln">88</td><td class="mk"></td><td class="code">                if (TempData["LastPage"] != null &amp;&amp; TempData["LastPage"].ToString() != "")</td></tr>
+<tr><td class="ln">85</td><td class="mk"></td><td class="code">                    LastPage = TempData["LastPage"].ToString();</td><td class="ln">89</td><td class="mk"></td><td class="code">                    LastPage = TempData["LastPage"].ToString();</td></tr>
+<tr><td class="ln">86</td><td class="mk"></td><td class="code">&nbsp;</td><td class="ln">90</td><td class="mk"></td><td class="code">&nbsp;</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<h2 class="file"><span class="kind">App file</span>MAP_Admin_Tool/MAP_WebApp/MAP_WebApp/Pages/Index.cshtml</h2>
+
+<section class="change" id="c3">
+  <header>
+    <span class="num">Change 3</span>
+    <h3>The date the user picks is not changed any more</h3>
+    <div class="where"><span class="path">MAP_Admin_Tool/MAP_WebApp/MAP_WebApp/Pages/Index.cshtml</span><span class="line">line 241</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the code that runs every time the user picks a date in the Report Date field.</p><p><b>Before:</b> the first thing it did was to replace the picked date with the Sunday of the same week (<code>getSunday</code>). So if the user picked Wednesday, the field "jumped" back to Sunday, and the whole week was loaded.</p><p><b>Now:</b> that line is commented out. The field keeps the exact date the user picked, and this date is sent to the database. The other two lines (refresh the filters and reload the table) are not changed.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; Index.cshtml</th><th colspan="3">After &mdash; Index.cshtml</th></tr></thead>
+    <tbody>
+<tr><td class="ln">238</td><td class="mk"></td><td class="code">                }</td><td class="ln">238</td><td class="mk"></td><td class="code">                }</td></tr>
+<tr><td class="ln">239</td><td class="mk"></td><td class="code">        });</td><td class="ln">239</td><td class="mk"></td><td class="code">        });</td></tr>
+<tr><td class="ln">240</td><td class="mk"></td><td class="code">        $('#filter_FromDate').on('change', function (e) {</td><td class="ln">240</td><td class="mk"></td><td class="code">        $('#filter_FromDate').on('change', function (e) {</td></tr>
+<tr><td class="ln del">241</td><td class="mk del">&minus;</td><td class="code del">            $("#filter_FromDate").val(getSunday($("#filter_FromDate").val()));</td><td class="ln add">241</td><td class="mk add">+</td><td class="code add">            // Report Date single day - 11/16/26: the selected date is no longer moved to the Sunday of its week</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">242</td><td class="mk add">+</td><td class="code add">            //$("#filter_FromDate").val(getSunday($("#filter_FromDate").val()));</td></tr>
+<tr><td class="ln">242</td><td class="mk"></td><td class="code">            $('.selectpicker').selectpicker('refresh');</td><td class="ln">243</td><td class="mk"></td><td class="code">            $('.selectpicker').selectpicker('refresh');</td></tr>
+<tr><td class="ln">243</td><td class="mk"></td><td class="code">            filterOnChange(this);</td><td class="ln">244</td><td class="mk"></td><td class="code">            filterOnChange(this);</td></tr>
+<tr><td class="ln">244</td><td class="mk"></td><td class="code">        });</td><td class="ln">245</td><td class="mk"></td><td class="code">        });</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c4">
+  <header>
+    <span class="num">Change 4</span>
+    <h3>"Reset Filters" puts back today's date</h3>
+    <div class="where"><span class="path">MAP_Admin_Tool/MAP_WebApp/MAP_WebApp/Pages/Index.cshtml</span><span class="line">line 571</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the code behind the "Reset Filters" link.</p><p><b>Before:</b> it put the Sunday of the current week back in the Report Date field. <b>Now:</b> it puts back today's date (the new <code>DefaultReportDate</code> from the first file).</p><p>The old line is commented out with <code>@* ... *@</code> and not with <code>//</code>. The reason: in this kind of page, anything that starts with <code>@Model</code> is still read by the server even when it is behind <code>//</code>. Because the old box <code>FirstDayOfPreviousWeek</code> does not exist any more, <code>//</code> would stop the app from building. <code>@* ... *@</code> is the comment style that hides the line completely. The original developer uses the same style on line 41 of this page.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; Index.cshtml</th><th colspan="3">After &mdash; Index.cshtml</th></tr></thead>
+    <tbody>
+<tr><td class="ln">567</td><td class="mk"></td><td class="code">        });</td><td class="ln">568</td><td class="mk"></td><td class="code">        });</td></tr>
+<tr><td class="ln">568</td><td class="mk"></td><td class="code">&nbsp;</td><td class="ln">569</td><td class="mk"></td><td class="code">&nbsp;</td></tr>
+<tr><td class="ln">569</td><td class="mk"></td><td class="code">        function ResetFilters() {</td><td class="ln">570</td><td class="mk"></td><td class="code">        function ResetFilters() {</td></tr>
+<tr><td class="ln del">570</td><td class="mk del">&minus;</td><td class="code del">            $('#filter_FromDate').val('@Model.FirstDayOfPreviousWeek');</td><td class="ln add">571</td><td class="mk add">+</td><td class="code add">            // Report Date single day - 11/16/26: Reset Filters puts back today's date, not the first day of the current week</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">572</td><td class="mk add">+</td><td class="code add">            @*$('#filter_FromDate').val('@Model.FirstDayOfPreviousWeek');*@</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">573</td><td class="mk add">+</td><td class="code add">            $('#filter_FromDate').val('@Model.DefaultReportDate');</td></tr>
+<tr><td class="ln">571</td><td class="mk"></td><td class="code">            //$('#filter_ToDate').val('@Model.LastDayOfPreviousWeek');</td><td class="ln">574</td><td class="mk"></td><td class="code">            //$('#filter_ToDate').val('@Model.LastDayOfPreviousWeek');</td></tr>
+<tr><td class="ln">572</td><td class="mk"></td><td class="code">            $('#filter_Policy option').prop('selected', true);</td><td class="ln">575</td><td class="mk"></td><td class="code">            $('#filter_Policy option').prop('selected', true);</td></tr>
+<tr><td class="ln">573</td><td class="mk"></td><td class="code">            $('#filter_SellerType option').prop('selected', true);</td><td class="ln">576</td><td class="mk"></td><td class="code">            $('#filter_SellerType option').prop('selected', true);</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<h2 class="file"><span class="kind">Database script</span>DB_Objects_ReportDate_SingleDay.sql</h2>
+<div class="note">
+<p>This is a new file. It holds the five database functions that use the Report Date, copied from your <code>DB_Objects.txt</code>,
+with the same two lines changed in each of them. On the left you see the function as it is in <code>DB_Objects.txt</code>,
+on the right as it is in the new script. <b>The script was not run on any database.</b> It has to be run on
+<code>HPI_MAPQC_WebTool</code> for the change to work.</p>
+<p><b>Example for all five functions.</b> The user selects Wednesday 18 Nov 2026 in the Report Date field.</p>
+<table class="ex">
+<tr><th></th><th>Start of the range</th><th>End of the range</th><th>Notifications shown</th></tr>
+<tr><td>Before</td><td>Sun 15 Nov 00:00 (the page moved the date to Sunday)</td><td>up to and including Sat 21 Nov 00:00</td><td>generated from Sun 15 Nov until Sat 21 Nov 00:00</td></tr>
+<tr><td>Now</td><td>Wed 18 Nov 00:00</td><td>earlier than Thu 19 Nov 00:00</td><td>generated on Wed 18 Nov only</td></tr>
+</table>
+</div>
+<h2 class="func"><span class="kind">Function</span>fn_GetNotificationList</h2><p class="purpose">It gives the rows of the notifications table on the landing page.</p>
+
+<section class="change" id="c5">
+  <header>
+    <span class="num">Change 5</span>
+    <h3>CREATE becomes ALTER</h3>
+    <div class="where"><span class="obj">fn_GetNotificationList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 20</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>Your file shows the function with the word <code>CREATE</code>, which is used to make a new function. The function already exists in the database, so the script uses <code>ALTER</code>, which means "change the existing one". This is the only reason for this difference. It keeps the function's permissions as they are.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln del">540</td><td class="mk del">&minus;</td><td class="code del">CREATE   FUNCTION [dbo].[fn_GetNotificationList](</td><td class="ln add">20</td><td class="mk add">+</td><td class="code add">ALTER FUNCTION [dbo].[fn_GetNotificationList](</td></tr>
+<tr><td class="ln">541</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td><td class="ln">21</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td></tr>
+<tr><td class="ln">542</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td><td class="ln">22</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td></tr>
+<tr><td class="ln">543</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td><td class="ln">23</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c6">
+  <header>
+    <span class="num">Change 6</span>
+    <h3>The end of the date range is the next day, not Saturday</h3>
+    <div class="where"><span class="obj">fn_GetNotificationList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 59</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>The function works with two dates: <code>@FromDate</code> (the start) and <code>@ToDate</code> (the end). <code>@FromDate</code> is the date the user selected and it is not changed.</p><p><b>Before:</b> <code>@ToDate</code> was calculated as the Saturday of the week of the selected date.</p><p><b>Now:</b> <code>@ToDate</code> is the selected date plus 1 day, at 00:00. Example: the user selects 18 Nov 2026, so <code>@FromDate</code> = 18 Nov 00:00 and <code>@ToDate</code> = 19 Nov 00:00.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">576</td><td class="mk"></td><td class="code">BEGIN</td><td class="ln">56</td><td class="mk"></td><td class="code">BEGIN</td></tr>
+<tr><td class="ln">577</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td><td class="ln">57</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td></tr>
+<tr><td class="ln">578</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td><td class="ln">58</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td></tr>
+<tr><td class="ln del">579</td><td class="mk del">&minus;</td><td class="code del">	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td><td class="ln add">59</td><td class="mk add">+</td><td class="code add">	-- Report Date single day - 11/16/26: @ToDate is the day after the selected date (before: the Saturday of the selected week)</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">60</td><td class="mk add">+</td><td class="code add">	--DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">61</td><td class="mk add">+</td><td class="code add">	DECLARE @ToDate				datetime		= DATEADD(DAY, 1, DATEDIFF(dd, 0, @inFromDate))</td></tr>
+<tr><td class="ln">580</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td><td class="ln">62</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td></tr>
+<tr><td class="ln">581</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td><td class="ln">63</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td></tr>
+<tr><td class="ln">582</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td><td class="ln">64</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c7">
+  <header>
+    <span class="num">Change 7</span>
+    <h3>"earlier than the next day" instead of "until Saturday"</h3>
+    <div class="where"><span class="obj">fn_GetNotificationList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 129</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the condition that picks the notifications by <code>GenerationDate</code>.</p><p><b>Before:</b> <code>&lt;=</code> (earlier than or equal to) the Saturday. <b>Now:</b> <code>&lt;</code> (earlier than) the next day.</p><p>Together with the line above it (<code>GenerationDate &gt;= @FromDate</code>, not changed), this means: from 00:00 of the selected date until the last moment of the same date. So the full day is covered, also when <code>GenerationDate</code> holds a time of day (for example 14:35). I use <code>&lt;</code> and not <code>&lt;=</code> so that a notification generated exactly at 00:00 of the next day is not shown by mistake.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">644</td><td class="mk"></td><td class="code">	LEFT JOIN N_SellerQualificationStatus WITH(NOLOCK) ON N_SellerQualificationStatus.Id = H.SellerQualificationStatus_id -- HH 04/22/24</td><td class="ln">126</td><td class="mk"></td><td class="code">	LEFT JOIN N_SellerQualificationStatus WITH(NOLOCK) ON N_SellerQualificationStatus.Id = H.SellerQualificationStatus_id -- HH 04/22/24</td></tr>
+<tr><td class="ln">645</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td><td class="ln">127</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td></tr>
+<tr><td class="ln">646</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td><td class="ln">128</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td></tr>
+<tr><td class="ln del">647</td><td class="mk del">&minus;</td><td class="code del">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td><td class="ln add">129</td><td class="mk add">+</td><td class="code add">		  -- Report Date single day - 11/16/26: "&lt;" instead of "&lt;=", so only the notifications generated on the selected date are returned</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">130</td><td class="mk add">+</td><td class="code add">		  --AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">131</td><td class="mk add">+</td><td class="code add">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt; @ToDate)))</td></tr>
+<tr><td class="ln">648</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td><td class="ln">132</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td></tr>
+<tr><td class="ln">649</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td><td class="ln">133</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td></tr>
+<tr><td class="ln">650</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td><td class="ln">134</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<h2 class="func"><span class="kind">Function</span>fn_GetSellerList</h2><p class="purpose">It gives the list of sellers in the "Seller Name" filter. This list depends on the Report Date, so it must follow the same rule as the table.</p>
+
+<section class="change" id="c8">
+  <header>
+    <span class="num">Change 8</span>
+    <h3>CREATE becomes ALTER</h3>
+    <div class="where"><span class="obj">fn_GetSellerList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 150</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>Your file shows the function with the word <code>CREATE</code>, which is used to make a new function. The function already exists in the database, so the script uses <code>ALTER</code>, which means "change the existing one". This is the only reason for this difference. It keeps the function's permissions as they are.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln del">712</td><td class="mk del">&minus;</td><td class="code del">CREATE   FUNCTION [dbo].[fn_GetSellerList](</td><td class="ln add">150</td><td class="mk add">+</td><td class="code add">ALTER FUNCTION [dbo].[fn_GetSellerList](</td></tr>
+<tr><td class="ln">713</td><td class="mk"></td><td class="code">	@inUser_id				nvarchar(32),</td><td class="ln">151</td><td class="mk"></td><td class="code">	@inUser_id				nvarchar(32),</td></tr>
+<tr><td class="ln">714</td><td class="mk"></td><td class="code">	@inFromDate				datetime,</td><td class="ln">152</td><td class="mk"></td><td class="code">	@inFromDate				datetime,</td></tr>
+<tr><td class="ln">715</td><td class="mk"></td><td class="code">	@inPolicy				nvarchar(4000),</td><td class="ln">153</td><td class="mk"></td><td class="code">	@inPolicy				nvarchar(4000),</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c9">
+  <header>
+    <span class="num">Change 9</span>
+    <h3>The end of the date range is the next day, not Saturday</h3>
+    <div class="where"><span class="obj">fn_GetSellerList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 172</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>The function works with two dates: <code>@FromDate</code> (the start) and <code>@ToDate</code> (the end). <code>@FromDate</code> is the date the user selected and it is not changed.</p><p><b>Before:</b> <code>@ToDate</code> was calculated as the Saturday of the week of the selected date.</p><p><b>Now:</b> <code>@ToDate</code> is the selected date plus 1 day, at 00:00. Example: the user selects 18 Nov 2026, so <code>@FromDate</code> = 18 Nov 00:00 and <code>@ToDate</code> = 19 Nov 00:00.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">731</td><td class="mk"></td><td class="code">BEGIN</td><td class="ln">169</td><td class="mk"></td><td class="code">BEGIN</td></tr>
+<tr><td class="ln">732</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td><td class="ln">170</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td></tr>
+<tr><td class="ln">733</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td><td class="ln">171</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td></tr>
+<tr><td class="ln del">734</td><td class="mk del">&minus;</td><td class="code del">	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td><td class="ln add">172</td><td class="mk add">+</td><td class="code add">	-- Report Date single day - 11/16/26: @ToDate is the day after the selected date (before: the Saturday of the selected week)</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">173</td><td class="mk add">+</td><td class="code add">	--DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">174</td><td class="mk add">+</td><td class="code add">	DECLARE @ToDate				datetime		= DATEADD(DAY, 1, DATEDIFF(dd, 0, @inFromDate))</td></tr>
+<tr><td class="ln">735</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td><td class="ln">175</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td></tr>
+<tr><td class="ln">736</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td><td class="ln">176</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td></tr>
+<tr><td class="ln">737</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td><td class="ln">177</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c10">
+  <header>
+    <span class="num">Change 10</span>
+    <h3>"earlier than the next day" instead of "until Saturday"</h3>
+    <div class="where"><span class="obj">fn_GetSellerList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 203</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the condition that picks the notifications by <code>GenerationDate</code>.</p><p><b>Before:</b> <code>&lt;=</code> (earlier than or equal to) the Saturday. <b>Now:</b> <code>&lt;</code> (earlier than) the next day.</p><p>Together with the line above it (<code>GenerationDate &gt;= @FromDate</code>, not changed), this means: from 00:00 of the selected date until the last moment of the same date. So the full day is covered, also when <code>GenerationDate</code> holds a time of day (for example 14:35). I use <code>&lt;</code> and not <code>&lt;=</code> so that a notification generated exactly at 00:00 of the next day is not shown by mistake.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">760</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td><td class="ln">200</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td></tr>
+<tr><td class="ln">761</td><td class="mk"></td><td class="code">		  AND H.Seller_id IS NOT NULL</td><td class="ln">201</td><td class="mk"></td><td class="code">		  AND H.Seller_id IS NOT NULL</td></tr>
+<tr><td class="ln">762</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td><td class="ln">202</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td></tr>
+<tr><td class="ln del">763</td><td class="mk del">&minus;</td><td class="code del">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td><td class="ln add">203</td><td class="mk add">+</td><td class="code add">		  -- Report Date single day - 11/16/26: "&lt;" instead of "&lt;=", so only the notifications generated on the selected date are returned</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">204</td><td class="mk add">+</td><td class="code add">		  --AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">205</td><td class="mk add">+</td><td class="code add">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt; @ToDate)))</td></tr>
+<tr><td class="ln">764</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td><td class="ln">206</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td></tr>
+<tr><td class="ln">765</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td><td class="ln">207</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td></tr>
+<tr><td class="ln">766</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td><td class="ln">208</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<h2 class="func"><span class="kind">Function</span>fn_GetNotificationContactList</h2><p class="purpose">It gives the rows of the Contacts page. The Contacts page uses the same Report Date that the user selected on the landing page.</p>
+
+<section class="change" id="c11">
+  <header>
+    <span class="num">Change 11</span>
+    <h3>CREATE becomes ALTER</h3>
+    <div class="where"><span class="obj">fn_GetNotificationContactList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 223</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>Your file shows the function with the word <code>CREATE</code>, which is used to make a new function. The function already exists in the database, so the script uses <code>ALTER</code>, which means "change the existing one". This is the only reason for this difference. It keeps the function's permissions as they are.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln del">239</td><td class="mk del">&minus;</td><td class="code del">CREATE FUNCTION [dbo].[fn_GetNotificationContactList](</td><td class="ln add">223</td><td class="mk add">+</td><td class="code add">ALTER FUNCTION [dbo].[fn_GetNotificationContactList](</td></tr>
+<tr><td class="ln">240</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td><td class="ln">224</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td></tr>
+<tr><td class="ln">241</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td><td class="ln">225</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td></tr>
+<tr><td class="ln">242</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td><td class="ln">226</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c12">
+  <header>
+    <span class="num">Change 12</span>
+    <h3>The end of the date range is the next day, not Saturday</h3>
+    <div class="where"><span class="obj">fn_GetNotificationContactList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 253</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>The function works with two dates: <code>@FromDate</code> (the start) and <code>@ToDate</code> (the end). <code>@FromDate</code> is the date the user selected and it is not changed.</p><p><b>Before:</b> <code>@ToDate</code> was calculated as the Saturday of the week of the selected date.</p><p><b>Now:</b> <code>@ToDate</code> is the selected date plus 1 day, at 00:00. Example: the user selects 18 Nov 2026, so <code>@FromDate</code> = 18 Nov 00:00 and <code>@ToDate</code> = 19 Nov 00:00.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">266</td><td class="mk"></td><td class="code">BEGIN</td><td class="ln">250</td><td class="mk"></td><td class="code">BEGIN</td></tr>
+<tr><td class="ln">267</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td><td class="ln">251</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td></tr>
+<tr><td class="ln">268</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td><td class="ln">252</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td></tr>
+<tr><td class="ln del">269</td><td class="mk del">&minus;</td><td class="code del">	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td><td class="ln add">253</td><td class="mk add">+</td><td class="code add">	-- Report Date single day - 11/16/26: @ToDate is the day after the selected date (before: the Saturday of the selected week)</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">254</td><td class="mk add">+</td><td class="code add">	--DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">255</td><td class="mk add">+</td><td class="code add">	DECLARE @ToDate				datetime		= DATEADD(DAY, 1, DATEDIFF(dd, 0, @inFromDate))</td></tr>
+<tr><td class="ln">270</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td><td class="ln">256</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td></tr>
+<tr><td class="ln">271</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td><td class="ln">257</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td></tr>
+<tr><td class="ln">272</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td><td class="ln">258</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c13">
+  <header>
+    <span class="num">Change 13</span>
+    <h3>"earlier than the next day" instead of "until Saturday"</h3>
+    <div class="where"><span class="obj">fn_GetNotificationContactList</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 307</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the condition that picks the notifications by <code>GenerationDate</code>.</p><p><b>Before:</b> <code>&lt;=</code> (earlier than or equal to) the Saturday. <b>Now:</b> <code>&lt;</code> (earlier than) the next day.</p><p>Together with the line above it (<code>GenerationDate &gt;= @FromDate</code>, not changed), this means: from 00:00 of the selected date until the last moment of the same date. So the full day is covered, also when <code>GenerationDate</code> holds a time of day (for example 14:35). I use <code>&lt;</code> and not <code>&lt;=</code> so that a notification generated exactly at 00:00 of the next day is not shown by mistake.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">318</td><td class="mk"></td><td class="code">		LEFT JOIN N_Country CN WITH(NOLOCK) ON CN.Id = H.Country_Id</td><td class="ln">304</td><td class="mk"></td><td class="code">		LEFT JOIN N_Country CN WITH(NOLOCK) ON CN.Id = H.Country_Id</td></tr>
+<tr><td class="ln">319</td><td class="mk"></td><td class="code">		WHERE H.Country_Id = @Country_id</td><td class="ln">305</td><td class="mk"></td><td class="code">		WHERE H.Country_Id = @Country_id</td></tr>
+<tr><td class="ln">320</td><td class="mk"></td><td class="code">			AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td><td class="ln">306</td><td class="mk"></td><td class="code">			AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td></tr>
+<tr><td class="ln del">321</td><td class="mk del">&minus;</td><td class="code del">			AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td><td class="ln add">307</td><td class="mk add">+</td><td class="code add">			-- Report Date single day - 11/16/26: "&lt;" instead of "&lt;=", so only the notifications generated on the selected date are returned</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">308</td><td class="mk add">+</td><td class="code add">			--AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">309</td><td class="mk add">+</td><td class="code add">			AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt; @ToDate)))</td></tr>
+<tr><td class="ln">322</td><td class="mk"></td><td class="code">			AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td><td class="ln">310</td><td class="mk"></td><td class="code">			AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td></tr>
+<tr><td class="ln">323</td><td class="mk"></td><td class="code">			AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td><td class="ln">311</td><td class="mk"></td><td class="code">			AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td></tr>
+<tr><td class="ln">324</td><td class="mk"></td><td class="code">			AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td><td class="ln">312</td><td class="mk"></td><td class="code">			AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<h2 class="func"><span class="kind">Function</span>fn_GetNotificationForExport</h2><p class="purpose">It gives the rows of the "Violation Summary" sheet in the Excel file of the "Download" button. This is confirmed: the export template BB8B81C380124CA08FC539333A74F99E in the table N_ExportTemplatesDataSources calls this function and passes the Report Date to it.</p>
+
+<section class="change" id="c14">
+  <header>
+    <span class="num">Change 14</span>
+    <h3>CREATE becomes ALTER</h3>
+    <div class="where"><span class="obj">fn_GetNotificationForExport</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 332</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>Your file shows the function with the word <code>CREATE</code>, which is used to make a new function. The function already exists in the database, so the script uses <code>ALTER</code>, which means "change the existing one". This is the only reason for this difference. It keeps the function's permissions as they are.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln del">455</td><td class="mk del">&minus;</td><td class="code del">CREATE   FUNCTION [dbo].[fn_GetNotificationForExport](</td><td class="ln add">332</td><td class="mk add">+</td><td class="code add">ALTER FUNCTION [dbo].[fn_GetNotificationForExport](</td></tr>
+<tr><td class="ln">456</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td><td class="ln">333</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td></tr>
+<tr><td class="ln">457</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td><td class="ln">334</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td></tr>
+<tr><td class="ln">458</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td><td class="ln">335</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c15">
+  <header>
+    <span class="num">Change 15</span>
+    <h3>The end of the date range is the next day, not Saturday</h3>
+    <div class="where"><span class="obj">fn_GetNotificationForExport</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 358</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>The function works with two dates: <code>@FromDate</code> (the start) and <code>@ToDate</code> (the end). <code>@FromDate</code> is the date the user selected and it is not changed.</p><p><b>Before:</b> <code>@ToDate</code> was calculated as the Saturday of the week of the selected date.</p><p><b>Now:</b> <code>@ToDate</code> is the selected date plus 1 day, at 00:00. Example: the user selects 18 Nov 2026, so <code>@FromDate</code> = 18 Nov 00:00 and <code>@ToDate</code> = 19 Nov 00:00.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">478</td><td class="mk"></td><td class="code">BEGIN</td><td class="ln">355</td><td class="mk"></td><td class="code">BEGIN</td></tr>
+<tr><td class="ln">479</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td><td class="ln">356</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td></tr>
+<tr><td class="ln">480</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td><td class="ln">357</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td></tr>
+<tr><td class="ln del">481</td><td class="mk del">&minus;</td><td class="code del">	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td><td class="ln add">358</td><td class="mk add">+</td><td class="code add">	-- Report Date single day - 11/16/26: @ToDate is the day after the selected date (before: the Saturday of the selected week)</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">359</td><td class="mk add">+</td><td class="code add">	--DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">360</td><td class="mk add">+</td><td class="code add">	DECLARE @ToDate				datetime		= DATEADD(DAY, 1, DATEDIFF(dd, 0, @inFromDate))</td></tr>
+<tr><td class="ln">482</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td><td class="ln">361</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td></tr>
+<tr><td class="ln">483</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td><td class="ln">362</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td></tr>
+<tr><td class="ln">484</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td><td class="ln">363</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c16">
+  <header>
+    <span class="num">Change 16</span>
+    <h3>"earlier than the next day" instead of "until Saturday"</h3>
+    <div class="where"><span class="obj">fn_GetNotificationForExport</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 400</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the condition that picks the notifications by <code>GenerationDate</code>.</p><p><b>Before:</b> <code>&lt;=</code> (earlier than or equal to) the Saturday. <b>Now:</b> <code>&lt;</code> (earlier than) the next day.</p><p>Together with the line above it (<code>GenerationDate &gt;= @FromDate</code>, not changed), this means: from 00:00 of the selected date until the last moment of the same date. So the full day is covered, also when <code>GenerationDate</code> holds a time of day (for example 14:35). I use <code>&lt;</code> and not <code>&lt;=</code> so that a notification generated exactly at 00:00 of the next day is not shown by mistake.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">518</td><td class="mk"></td><td class="code">	LEFT JOIN N_Country C WITH(NOLOCK) ON C.Id = H.Country_Id</td><td class="ln">397</td><td class="mk"></td><td class="code">	LEFT JOIN N_Country C WITH(NOLOCK) ON C.Id = H.Country_Id</td></tr>
+<tr><td class="ln">519</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td><td class="ln">398</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td></tr>
+<tr><td class="ln">520</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td><td class="ln">399</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td></tr>
+<tr><td class="ln del">521</td><td class="mk del">&minus;</td><td class="code del">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td><td class="ln add">400</td><td class="mk add">+</td><td class="code add">		  -- Report Date single day - 11/16/26: "&lt;" instead of "&lt;=", so only the notifications generated on the selected date are returned</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">401</td><td class="mk add">+</td><td class="code add">		  --AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">402</td><td class="mk add">+</td><td class="code add">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt; @ToDate)))</td></tr>
+<tr><td class="ln">522</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td><td class="ln">403</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td></tr>
+<tr><td class="ln">523</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td><td class="ln">404</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td></tr>
+<tr><td class="ln">524</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td><td class="ln">405</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<h2 class="func"><span class="kind">Function</span>fn_GetNotificationDetailsForExport</h2><p class="purpose">It gives the rows of the "Violation Detail" sheet in the Excel file of the "Download" button. This is confirmed: the export template BB8B81C380124CA08FC539333A74F99E in the table N_ExportTemplatesDataSources calls this function and passes the Report Date to it.</p>
+
+<section class="change" id="c17">
+  <header>
+    <span class="num">Change 17</span>
+    <h3>CREATE becomes ALTER</h3>
+    <div class="where"><span class="obj">fn_GetNotificationDetailsForExport</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 421</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>Your file shows the function with the word <code>CREATE</code>, which is used to make a new function. The function already exists in the database, so the script uses <code>ALTER</code>, which means "change the existing one". This is the only reason for this difference. It keeps the function's permissions as they are.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln del">344</td><td class="mk del">&minus;</td><td class="code del">CREATE FUNCTION [dbo].[fn_GetNotificationDetailsForExport](</td><td class="ln add">421</td><td class="mk add">+</td><td class="code add">ALTER FUNCTION [dbo].[fn_GetNotificationDetailsForExport](</td></tr>
+<tr><td class="ln">345</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td><td class="ln">422</td><td class="mk"></td><td class="code">	@inUser_id			nvarchar(32),</td></tr>
+<tr><td class="ln">346</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td><td class="ln">423</td><td class="mk"></td><td class="code">	@inFromDate			datetime,</td></tr>
+<tr><td class="ln">347</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td><td class="ln">424</td><td class="mk"></td><td class="code">	@inPolicy			nvarchar(4000),</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c18">
+  <header>
+    <span class="num">Change 18</span>
+    <h3>The end of the date range is the next day, not Saturday</h3>
+    <div class="where"><span class="obj">fn_GetNotificationDetailsForExport</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 457</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>The function works with two dates: <code>@FromDate</code> (the start) and <code>@ToDate</code> (the end). <code>@FromDate</code> is the date the user selected and it is not changed.</p><p><b>Before:</b> <code>@ToDate</code> was calculated as the Saturday of the week of the selected date.</p><p><b>Now:</b> <code>@ToDate</code> is the selected date plus 1 day, at 00:00. Example: the user selects 18 Nov 2026, so <code>@FromDate</code> = 18 Nov 00:00 and <code>@ToDate</code> = 19 Nov 00:00.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">377</td><td class="mk"></td><td class="code">BEGIN</td><td class="ln">454</td><td class="mk"></td><td class="code">BEGIN</td></tr>
+<tr><td class="ln">378</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td><td class="ln">455</td><td class="mk"></td><td class="code">	DECLARE @User_id			nvarchar(32)	= @inUser_id</td></tr>
+<tr><td class="ln">379</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td><td class="ln">456</td><td class="mk"></td><td class="code">	DECLARE @FromDate			datetime		= @inFromDate</td></tr>
+<tr><td class="ln del">380</td><td class="mk del">&minus;</td><td class="code del">	DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td><td class="ln add">457</td><td class="mk add">+</td><td class="code add">	-- Report Date single day - 11/16/26: @ToDate is the day after the selected date (before: the Saturday of the selected week)</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">458</td><td class="mk add">+</td><td class="code add">	--DECLARE @ToDate				datetime		= DATEADD(wk, 1, DATEADD(DAY, 0-DATEPART(WEEKDAY, @inFromDate), DATEDIFF(dd, 0, @inFromDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">459</td><td class="mk add">+</td><td class="code add">	DECLARE @ToDate				datetime		= DATEADD(DAY, 1, DATEDIFF(dd, 0, @inFromDate))</td></tr>
+<tr><td class="ln">381</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td><td class="ln">460</td><td class="mk"></td><td class="code">	DECLARE @Policy				nvarchar(4000)	= NULLIF(@inPolicy,'')</td></tr>
+<tr><td class="ln">382</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td><td class="ln">461</td><td class="mk"></td><td class="code">	DECLARE @SellerType			nvarchar(4000)	= NULLIF(@inSellerType,'')</td></tr>
+<tr><td class="ln">383</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td><td class="ln">462</td><td class="mk"></td><td class="code">	DECLARE @PenaltyType		nvarchar(4000)	= NULLIF(@inPenaltyType,'')</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="change" id="c19">
+  <header>
+    <span class="num">Change 19</span>
+    <h3>"earlier than the next day" instead of "until Saturday"</h3>
+    <div class="where"><span class="obj">fn_GetNotificationDetailsForExport</span><span class="path">DB_Objects_ReportDate_SingleDay.sql</span><span class="line">line 514</span></div>
+  </header>
+  <div class="why"><h4>What changed and why</h4><p>This is the condition that picks the notifications by <code>GenerationDate</code>.</p><p><b>Before:</b> <code>&lt;=</code> (earlier than or equal to) the Saturday. <b>Now:</b> <code>&lt;</code> (earlier than) the next day.</p><p>Together with the line above it (<code>GenerationDate &gt;= @FromDate</code>, not changed), this means: from 00:00 of the selected date until the last moment of the same date. So the full day is covered, also when <code>GenerationDate</code> holds a time of day (for example 14:35). I use <code>&lt;</code> and not <code>&lt;=</code> so that a notification generated exactly at 00:00 of the next day is not shown by mistake.</p></div>
+  <div class="diffwrap">
+  <table class="diff">
+    <colgroup><col class="c-ln"><col class="c-mk"><col class="c-code"><col class="c-ln"><col class="c-mk"><col class="c-code"></colgroup>
+    <thead><tr><th colspan="3">Before &mdash; DB_Objects.txt</th><th colspan="3">After &mdash; DB_Objects_ReportDate_SingleDay.sql</th></tr></thead>
+    <tbody>
+<tr><td class="ln">432</td><td class="mk"></td><td class="code">	LEFT JOIN N_Country C WITH(NOLOCK) ON C.Id = H.Country_Id</td><td class="ln">511</td><td class="mk"></td><td class="code">	LEFT JOIN N_Country C WITH(NOLOCK) ON C.Id = H.Country_Id</td></tr>
+<tr><td class="ln">433</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td><td class="ln">512</td><td class="mk"></td><td class="code">	WHERE H.Country_Id = @Country_id</td></tr>
+<tr><td class="ln">434</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td><td class="ln">513</td><td class="mk"></td><td class="code">		  AND ((@FromDate IS NULL) OR ((@FromDate IS NOT NULL) AND (H.GenerationDate &gt;= @FromDate)))</td></tr>
+<tr><td class="ln del">435</td><td class="mk del">&minus;</td><td class="code del">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td><td class="ln add">514</td><td class="mk add">+</td><td class="code add">		  -- Report Date single day - 11/16/26: "&lt;" instead of "&lt;=", so only the notifications generated on the selected date are returned</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">515</td><td class="mk add">+</td><td class="code add">		  --AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt;= @ToDate)))</td></tr>
+<tr><td class="ln empty"></td><td class="mk empty"></td><td class="code empty"></td><td class="ln add">516</td><td class="mk add">+</td><td class="code add">		  AND ((@ToDate IS NULL) OR ((@ToDate IS NOT NULL) AND (H.GenerationDate &lt; @ToDate)))</td></tr>
+<tr><td class="ln">436</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td><td class="ln">517</td><td class="mk"></td><td class="code">		  AND ((@Policy IS NOT NULL) AND (H.Policy_id in (SELECT Value FROM fn_Split(@Policy,','))))</td></tr>
+<tr><td class="ln">437</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td><td class="ln">518</td><td class="mk"></td><td class="code">		  AND ((@SellerType IS NOT NULL) AND (N_SellerType.Id in (SELECT Value FROM fn_Split(@SellerType,','))))</td></tr>
+<tr><td class="ln">438</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td><td class="ln">519</td><td class="mk"></td><td class="code">		  AND ((@SellerSubType IS NOT NULL) AND (N_SellerSubType.Description in (SELECT Value FROM fn_Split(@SellerSubType,','))))</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+</main>
+</body>
+</html>
