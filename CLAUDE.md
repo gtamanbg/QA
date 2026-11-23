@@ -22,3 +22,4 @@ Apply these preferences to all Claude coding work.
     Bold the key actions, so the bold text alone is the answer.
 11. Before you answer, list what you'd need to know that I haven't told you and also list what you're assuming and ask about anything that's missing. If my request could mean two different things, tell me both readings before you start.
 12. Estimate how confident you are in your ability to execute the plan (1-100%) and what it would take to move you to 100%.
+13. Write DB dates as 'YYYY-MM-DD' instead of 'YYYYMMDD' or something else.
