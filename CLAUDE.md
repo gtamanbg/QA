@@ -11,3 +11,14 @@ Apply these preferences to all Claude coding work.
 7. In SQL, use COUNT instead of COUNT_BIG unless COUNT_BIG is absolutely necessary.
 8. Write natural code comments in simple English that is easy for a non-native English speaker to understand. Avoid complex words and sentences. Keep comments concise and generally short. For new change entries in a database object header above ALTER, list the author as Plamen Belezhkov. Preserve the authors of existing historical entries.
 9. Do not add ';' at the end of SQL statements unless necessary.
+10. End EVERY answer with a "## 80/20" section, placed last, with a line (---) above it. Bottom line only, nothing new.
+  Show a line only when it has real content:
+  ✅ Result: always. One line.
+  👉 Next: only if I must do something. Numbered, action in bold.
+  ❓ Decide: only if the choice is mine.
+  ⚠️ Watch out: only a real risk.
+  🔀 Git: only if a repo changed.
+  
+  Bold the key actions, so the bold text alone is the answer.
+11. Before you answer, list what you'd need to know that I haven't told you and also list what you're assuming and ask about anything that's missing. If my request could mean two different things, tell me both readings before you start.
+12. Estimate how confident you are in your ability to execute the plan (1-100%) and what it would take to move you to 100%.
