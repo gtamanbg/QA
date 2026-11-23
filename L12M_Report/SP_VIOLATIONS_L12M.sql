@@ -56,6 +56,7 @@ GO
 -- 11/17/26 Plamen Belezhkov: Merged _report.SP_BUILD_VIOLATIONS_L12M_STAGE into this SP. Removed the app locks, the extra checks and the progress messages. No change to the report rules.
 -- 11/17/26 Plamen Belezhkov: Removed columns that were calculated but not used. Fixed the account name Target Corporation.
 -- 11/23/26 Plamen Belezhkov: #OutputBase uses one thread and the full name of FN_GET_SELLER_STATUS again, to stop the high tempdb use.
+-- 11/23/26 Plamen Belezhkov: Removed the join hint warning messages. A full refresh also deletes the rows outside the report period.
 ALTER PROCEDURE [_report].[SP_VIOLATIONS_L12M]
 @P_Export_Start_Date DATE = NULL,
 @P_Generate_Full_Refresh BIT = 0,
@@ -442,6 +443,7 @@ BEGIN
 
 	-- Get the listing rows for this day. The list of IDs is unique only to read each listing one time. It does not remove violations.
 	-- The INDEX hint uses the existing index on ID.
+	-- LOOP JOIN and FORCE ORDER in OPTION give the same plan as INNER LOOP JOIN, but SQL Server does not print a warning for them.
 	INSERT INTO #MAP_L12M_US_Listings (ID, ASIN, Listing_URL)
 	SELECT nm.ID, nm.ASIN, nm.Listing_URL
 	FROM (
@@ -450,8 +452,8 @@ BEGIN
 		WHERE Data_Source IN ('NewMo', 'Pervasive Mind')
 			AND Listing_ID IS NOT NULL
 	) keys_needed
-	INNER LOOP JOIN _final.Seller_Pricing_NewMo nm WITH(INDEX([Idx_final_Seller_Pricing_NewMo_Id])) ON nm.ID = keys_needed.Listing_ID
-	OPTION (MAXDOP 2, RECOMPILE)
+	JOIN _final.Seller_Pricing_NewMo nm WITH(INDEX([Idx_final_Seller_Pricing_NewMo_Id])) ON nm.ID = keys_needed.Listing_ID
+	OPTION (LOOP JOIN, FORCE ORDER, MAXDOP 2, RECOMPILE)
 
 	INSERT INTO #MAP_L12M_US_Base (Violation_ID, [Fact ID], [Week], [Date], [Product Subcategory], SKU, ASIN, Product_Description, Account,
 		[Seller Name], [Location ID], Master_SID, [Seller Penalty Type], [Reporting Group], Market, [Log-in Type], [Price Location], MAP, [Advertised Price], [Eligible IR], [Lowest Possible Price],
@@ -1494,6 +1496,7 @@ BEGIN
 
 	-- Get the listing rows for this day. The list of IDs is unique only to read each listing one time. It does not remove violations.
 	-- The INDEX hint uses the existing index on ID.
+	-- LOOP JOIN and FORCE ORDER in OPTION give the same plan as INNER LOOP JOIN, but SQL Server does not print a warning for them.
 	INSERT INTO #MAP_L12M_CA_Listings (ID, ASIN, Listing_URL)
 	SELECT nm.ID, nm.ASIN, nm.Listing_URL
 	FROM (
@@ -1502,8 +1505,8 @@ BEGIN
 		WHERE Data_Source IN ('NewMo', 'Pervasive Mind')
 			AND Listing_ID IS NOT NULL
 	) keys_needed
-	INNER LOOP JOIN HP_MAP_Canada._final.Seller_Pricing_NewMo_Canada nm WITH(INDEX([NonClusteredIndex-20191217-072548])) ON nm.ID = keys_needed.Listing_ID
-	OPTION (MAXDOP 2, RECOMPILE)
+	JOIN HP_MAP_Canada._final.Seller_Pricing_NewMo_Canada nm WITH(INDEX([NonClusteredIndex-20191217-072548])) ON nm.ID = keys_needed.Listing_ID
+	OPTION (LOOP JOIN, FORCE ORDER, MAXDOP 2, RECOMPILE)
 
 	INSERT INTO #MAP_L12M_CA_Base (Violation_ID, [Fact ID], [Week], [Date], [Product Subcategory], SKU, ASIN, Product_Description, Account,
 		[Seller Name], [Location ID], Master_SID, [Seller Penalty Type], [Reporting Group], Market, [Log-in Type], [Price Location], MAP, [Advertised Price], [Eligible IR], [Lowest Possible Price],
@@ -2209,6 +2212,13 @@ DELETE target
 FROM _report.Violations_L12M target
 WHERE target.[Date] BETWEEN @ExportStartDate AND @ThroughDate
 	AND target.Country IN ('US', 'Canada')
+
+-- Full refresh: also delete the old rows that are outside the report period.
+IF @P_Generate_Full_Refresh = 1
+	DELETE target
+	FROM _report.Violations_L12M target
+	WHERE (target.[Date] < @StartDate OR target.[Date] > @ThroughDate)
+		AND target.Country IN ('US', 'Canada')
 
 INSERT INTO _report.Violations_L12M
 	([Country]
