@@ -55,6 +55,7 @@ GO
 -- 09/17/26 PB Restored top-seller membership and weekly seller ranking without restoring projected FIN or RunningTotal.
 -- 11/17/26 Plamen Belezhkov: Merged _report.SP_BUILD_VIOLATIONS_L12M_STAGE into this SP. Removed the app locks, the extra checks and the progress messages. No change to the report rules.
 -- 11/17/26 Plamen Belezhkov: Removed columns that were calculated but not used. Fixed the account name Target Corporation.
+-- 11/23/26 Plamen Belezhkov: #OutputBase uses one thread and the full name of FN_GET_SELLER_STATUS again, to stop the high tempdb use.
 ALTER PROCEDURE [_report].[SP_VIOLATIONS_L12M]
 @P_Export_Start_Date DATE = NULL,
 @P_Generate_Full_Refresh BIT = 0,
@@ -884,7 +885,7 @@ SELECT CAST('US' AS NVARCHAR(10)) Country
 	,CONVERT(NVARCHAR(20), LEFT(
 		CASE
 			WHEN scaffold.[Location ID] = '99999999' THEN 'Qualified'
-			WHEN qpp.Partner_Count > 0 THEN dbo.FN_GET_SELLER_STATUS(
+			WHEN qpp.Partner_Count > 0 THEN HP_MAP_Prod.dbo.FN_GET_SELLER_STATUS(
 				CASE
 					-- The function needs the base category name, not the name shown in the report.
 					WHEN scaffold.[Product Subcategory] = 'Large Format Supplies' THEN 'Supplies'
@@ -1115,6 +1116,8 @@ LEFT JOIN #Content content
 	AND content.Country IN ('US', 'USA')
 LEFT JOIN #PartnerLookup partner ON partner.LocationId = scaffold.[Location ID]
 WHERE scaffold.[Location ID] <> 'N/A' -- 10/14/24 ED
+-- Use one thread here. With more threads this query used more than 100 GB of tempdb.
+OPTION (MAXDOP 1)
 
 CREATE NONCLUSTERED INDEX IX_OutputBase_Selector ON #OutputBase ([Location ID], [Date], SKU, Login_Type_ID) INCLUDE ([Week], [Product Subcategory], [Letter Type])
 
@@ -1922,7 +1925,7 @@ SELECT CAST('Canada' AS NVARCHAR(10)) Country
 	,CONVERT(NVARCHAR(20), LEFT(
 		CASE
 			WHEN scaffold.[Location ID] = '99999999' THEN 'Qualified'
-			WHEN qpp.Partner_Count > 0 THEN dbo.FN_GET_SELLER_STATUS(
+			WHEN qpp.Partner_Count > 0 THEN HP_MAP_Prod.dbo.FN_GET_SELLER_STATUS(
 				scaffold.[Product Category],
 				seller_at_date.Supplies_Qualification,
 				seller_at_date.Print_Qualification,
@@ -2147,6 +2150,8 @@ LEFT JOIN #CA_Content content
 	AND content.Country IN ('CA', 'Canada')
 LEFT JOIN #PartnerLookup partner ON partner.LocationId = scaffold.[Location ID]
 WHERE scaffold.[Location ID] <> 'N/A' -- 10/14/24 ED
+-- Use one thread here. With more threads this query used more than 100 GB of tempdb.
+OPTION (MAXDOP 1)
 
 CREATE NONCLUSTERED INDEX IX_OutputBase_Selector ON #CA_OutputBase ([Location ID], [Date], SKU, Login_Type_ID) INCLUDE ([Week], [Product Subcategory], [Letter Type])
 
